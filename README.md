@@ -1,4 +1,4 @@
-##Thu thập phản hồi của khách sau khi phiếu bảo hành được đóng, tổng hợp chỉ số hài lòng theo trung tâm, theo kỹ thuật viên và theo thời gian.
+## Thu thập phản hồi của khách sau khi phiếu bảo hành được đóng, tổng hợp chỉ số hài lòng theo trung tâm, theo kỹ thuật viên và theo thời gian.
 <br>Sinh viên:
 Hà Gia Thiên Bảo - 2374802010032 - Track SE<br>
 <br>Học phần:
