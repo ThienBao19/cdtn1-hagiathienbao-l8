@@ -1,10 +1,10 @@
 Thu thập phản hồi của khách sau khi phiếu bảo hành được đóng, tổng hợp chỉ số hài lòng theo trung tâm, theo kỹ thuật viên và theo thời gian.
-Sinh viên:
-Hà Gia Thiên Bảo - 2374802010032 - Track SE
-Học phần:
-Chuyên đề Tốt nghiệp 1, HK1 2026-2027
-Luồng nghiệp vụ:
-L8 – Tiếp nhận và phân loại yêu cầu bảo hành
+<br>Sinh viên:
+Hà Gia Thiên Bảo - 2374802010032 - Track SE<br>
+<br>Học phần:
+Chuyên đề Tốt nghiệp 1, HK1 2026-2027<br>
+<br>Luồng nghiệp vụ:
+L8 – Tiếp nhận và phân loại yêu cầu bảo hành<br>
 ## 1. Mục tiêu
 Thu thập và tổng hợp khảo sát hài lòng sau bảo hành: khi phiếu bảo hành chuyển sang trạng thái ĐÃ ĐÓNG, hệ thống tạo một lời mời khảo sát duy nhất cho khách hàng, khách hàng chấm điểm CSAT (1–5), NPS (0–10) và để lại nhận xét, hệ thống lưu phản hồi, gắn chờ phân hồi điểm thấp và tổng hợp các chỉ số hài lòng theo trung tâm, kỹ thuật viên và theo tháng trên dashboard cho quản lý.
 ## 2. Yêu cầu môi trường
