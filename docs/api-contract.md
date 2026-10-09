@@ -1,6 +1,6 @@
 # API contract – Khảo sát hài lòng CSAT / NPS (Luồng L8)
 
-Base URL (local): `http://localhost:3000` · Định dạng: JSON, UTF-8 · Thời gian: ISO 8601, múi giờ +07:00.
+Base URL (local): `http://localhost:3000` · Định dạng: JSON, UTF-8 · Thời gian: ISO 8601, múi giờ +07:00. Các trường `status`, `expires_at`, `is_flagged` trong response là giá trị tính khi đọc, không lưu trong CSDL.
 
 Lỗi trả về theo một khuôn chung:
 
@@ -16,8 +16,8 @@ Lỗi trả về theo một khuôn chung:
 | API2 | GET | `/api/surveys/{token}` | Khách mở link khảo sát: lấy thông tin phiếu để hiển thị trang khảo sát. | US2 · FR2 · UC2 |
 | API3 | POST | `/api/surveys/{token}/responses` | Khách gửi phản hồi khảo sát: điểm CSAT, điểm NPS, nhận xét. | US2, US3, US4 · FR2–FR4 · UC2 |
 | API4 | GET | `/api/survey-responses` | Nhân viên tra cứu danh sách phản hồi theo trung tâm, khoảng ngày, điểm CSAT tối đa. | US5 · FR5 · UC3 |
-| (SHOULD) | GET | `/api/reports/technicians?center_id=2&month=2026-09` | CSAT trung bình và NPS theo kỹ thuật viên | US6 · FR6 · UC5 |
-| (SHOULD) | GET | `/api/reports/monthly-trend?center_id=2&from=2026-01&to=2026-09` | Tỉ lệ CSAT và NPS theo tháng của trung tâm | US7 · FR7 · UC6 |
+| (SHOULD) | GET | `/api/reports/technicians?center_id=2&month=2026-09` | CSAT trung bình và NPS theo kỹ thuật viên | US6 · FR6 · UC4 |
+| (SHOULD) | GET | `/api/reports/monthly-trend?center_id=2&from=2026-01&to=2026-09` | Tỉ lệ CSAT và NPS theo tháng của trung tâm | US7 · FR7 · UC5 |
 
 ## 2. Chi tiết endpoint cho story MUST
 
