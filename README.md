@@ -30,7 +30,7 @@ Thu thập và tổng hợp khảo sát hài lòng sau bảo hành: khi phiếu 
 | Thành phần | Công nghệ |
 |---|---|
 | Backend | Node.js 20 LTS + Express (REST API) |
-| Cơ sở dữ liệu | PostgreSQL 16 |
+| Cơ sở dữ liệu | PostgreSQL 16 (máy cài bản 18 vẫn chạy được schema) |
 | Frontend | React + Vite |
 | Kiểm thử | Jest + Supertest |
 | Công cụ | Git/GitHub, VS Code, Postman |
@@ -71,6 +71,22 @@ Chi tiết: [docs/ai-disclosure.md](docs/ai-disclosure.md)
 ## 7. Trạng thái hiện tại
 
 - [x] Khởi tạo cấu trúc repo, .gitignore, .env.example (Buổi 2)
+- [x] Bài tập 1 – Phân tích và Thiết kế (Buổi 6): SRS, use case, kiến trúc, ERD + DDL, wireframe
 - [ ] Smoke test: `/`, `/health`, `/db-check` chạy được, ảnh chụp lưu trong docs/
 - [ ] Module 1 – Lời mời & trả lời khảo sát (Buổi 8–10)
 - [ ] Module 2 – Tổng hợp & dashboard CSAT/NPS (Buổi 10–12)
+
+## 8. Hồ sơ Bài tập 1 (Phân tích và Thiết kế)
+
+| Thành phần | File gốc | Ảnh xuất |
+|---|---|---|
+| Bản nộp PDF | `BT1_2374802010032_HaGiaThienBao.pdf` | — |
+| SRS rút gọn (mục 1) | `docs/srs.md` | — |
+| Use Case (mục 2) | `docs/diagrams/usecase-l8.drawio` | `docs/export/usecase-l8.png` |
+| Kiến trúc (mục 3) | `docs/architecture.drawio` | `docs/export/architecture.png` |
+| ERD + DDL (mục 4) | `docs/erd.drawio`, `db/schema.sql` | `docs/export/erd.png` |
+| Wireframe (mục 5) | `docs/wireframe.drawio` | `docs/export/wireframe-m1..m3.png` |
+| API contract (track SE) | `docs/api-contract.md` | — |
+| Khai báo AI | `docs/ai-disclosure.md` | — |
+
+Mở file `.drawio` bằng https://app.diagrams.net (File → Open from → Device). Tạo CSDL: `psql -U postgres -d smartcrm -f db/schema.sql`.
