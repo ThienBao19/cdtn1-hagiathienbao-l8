@@ -2,7 +2,7 @@
 
 **Sinh viên:** Hà Gia Thiên Bảo – 2374802010032 – Track SE  
 **Học phần:** Chuyên đề Tốt nghiệp 1 – HK1 2026–2027  
-**Phiên bản:** 1.1 – 09/10/2026 (bản nộp BT1)  
+**Phiên bản:** 1.2 – 19/10/2026 (cập nhật sau phản hồi BT1, chi tiết ở [thay-doi-thiet-ke.md](thay-doi-thiet-ke.md)); 1.1 – 09/10/2026 (bản nộp BT1)  
 **Chuẩn tham chiếu:** rút gọn theo tinh thần của ISO/IEC/IEEE 29148.
 
 ## 1. Giới thiệu và phạm vi
@@ -143,10 +143,10 @@ Sơ đồ: `docs/diagrams/usecase-l8.drawio` (file gốc) và `docs/export/useca
 | Mã | Quy tắc |
 |---|---|
 | QT-10 | Chỉ gửi khảo sát cho phiếu ở trạng thái Đã đóng, mỗi phiếu chỉ khảo sát một lần. |
-| QT-13 | Không xoá vật lý phiếu bảo hành, hồ sơ khách hàng, lời mời và phản hồi khảo sát; chỉ đánh dấu ngừng sử dụng. |
+| QT-13 | Không xoá vật lý phiếu bảo hành, hồ sơ khách hàng, lời mời và phản hồi khảo sát; chỉ đánh dấu ngừng sử dụng. Thao tác “xoá” khách hàng, kỹ thuật viên qua API = đặt is_active = false (TD-02). |
 | QT-14 | Nhân viên và Quản lý trung tâm chỉ xem dữ liệu của trung tâm mình làm việc / phụ trách. |
 | QT-15 | Số điện thoại khách hiển thị dạng che (090****567) với mọi vai trò trừ Quản lý trung tâm. |
-| BR-L8-01 | Lời mời khảo sát hết hạn sau 7 ngày kể từ lúc tạo; lời mời hết hạn không nhận phản hồi. |
+| BR-L8-01 | Lời mời khảo sát hết hạn sau 7 ngày kể từ lúc tạo; lời mời hết hạn không nhận phản hồi. Đúng thời điểm created_at + 7 ngày vẫn còn hiệu lực, sau thời điểm đó là hết hạn (TD-06). |
 | BR-L8-02 | Điểm CSAT bắt buộc, số nguyên 1–5; điểm NPS không bắt buộc, số nguyên 0–10; nhận xét không bắt buộc, tối đa 500 ký tự. |
 | BR-L8-03 | Chỉ số NPS = % điểm NPS 9–10 trừ % điểm NPS 0–6 (chỉ tính phản hồi có điểm NPS); tỉ lệ CSAT = % phản hồi có CSAT 4–5. |
 | BR-L8-04 | Phản hồi có điểm CSAT ≤ 2 hiển thị nhãn “Cần chăm sóc”; nhãn tính khi đọc, không lưu thành cột. |
@@ -167,4 +167,4 @@ Ràng buộc dự án: hiện thực trong 6 buổi thực hành (BT2); dữ li�
 | FR7 | US7 | UC5 | SHOULD | survey_response, ticket, service_center | M3 | TC15 |
 | — | (US8 cũ) | — | WON'T | — | — | ngoài phạm vi |
 
-Đặc tả riêng track SE: xem [api-contract.md](api-contract.md). Thiết kế: [architecture.drawio](architecture.drawio), [erd.drawio](erd.drawio), [wireframe.drawio](wireframe.drawio), DDL: [../db/schema.sql](../db/schema.sql). Ảnh xuất: thư mục [export/](export/).
+Đặc tả riêng track SE: xem [api-contract.md](api-contract.md). Thiết kế: [architecture.drawio](architecture.drawio), [erd.drawio](erd.drawio), [wireframe.drawio](wireframe.drawio), DDL: [../migrations/001_init_schema.sql](../migrations/001_init_schema.sql). Ảnh xuất: thư mục [export/](export/).

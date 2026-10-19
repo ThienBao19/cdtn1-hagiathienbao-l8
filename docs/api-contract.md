@@ -6,7 +6,10 @@ Lỗi trả về theo một khuôn chung:
 
 ```json
 { "error": { "code": "INVITATION_EXPIRED", "message": "Link khảo sát đã hết hạn" } }
+{ "error": { "code": "VALIDATION_ERROR", "message": "Vui lòng chọn mức hài lòng", "field": "csat_score" } }
 ```
+
+Bổ sung ở BT2 (TD-05): lỗi dữ liệu vào có thêm `field` (tên trường sai); lỗi `ALREADY_RESPONDED` có thêm `details` (điểm đã chấm, AC2.2); body không phải JSON → `400 INVALID_JSON`; CSDL không kết nối được → `503 DB_UNAVAILABLE`; lỗi không lường trước → `500 INTERNAL_ERROR` (không trả lỗi thô của thư viện).
 
 ## 1. Danh sách endpoint
 
@@ -71,7 +74,7 @@ Response:
 {
   "ticket_code": "BH-000123/2026",
   "center_name": "Trung tâm bảo hành Quận 10",
-  "device_name": "iPhone 13 128GB",
+  "device_model": "iPhone 13 128GB",
   "closed_at": "2026-10-02T09:30:00+07:00",
   "status": "CHO_TRA_LOI",
   "expires_at": "2026-10-09T09:30:00+07:00"
@@ -179,6 +182,23 @@ Response:
 | `csat_max` | API4 query | Không bắt buộc | Số nguyên | 1 ≤ giá trị ≤ 5 |
 | `page, page_size` | API4 query | Không bắt buộc | Số nguyên | page ≥ 1 (mặc định 1); 1 ≤ page_size ≤ 100 (mặc định 20) |
 
-## 4. Tự kiểm
+## 4. Endpoint CRUD bổ sung ở BT2 (TD-01, TD-02)
+
+| Phương thức | Đường dẫn | Mục đích | Mã HTTP |
+|---|---|---|---|
+| GET | `/api/customers?include_inactive=true` | Danh sách khách hàng (mặc định chỉ đang hoạt động), số điện thoại dạng che (QT-15) | 200 |
+| GET | `/api/customers/{id}` | Xem một khách hàng | 200 / 400 / 404 |
+| POST | `/api/customers` | Tạo khách hàng `{full_name, phone}` | 201 / 400 / 409 PHONE_EXISTS |
+| PUT | `/api/customers/{id}` | Sửa khách hàng | 200 / 400 / 404 / 409 PHONE_EXISTS, CUSTOMER_INACTIVE |
+| DELETE | `/api/customers/{id}` | Ngừng sử dụng (`is_active = false`, QT-13 – không xoá vật lý) | 200 / 404 |
+| GET | `/api/technicians?center_id=1&include_inactive=true` | Danh sách kỹ thuật viên, lọc theo trung tâm | 200 / 400 |
+| GET | `/api/technicians/{id}` | Xem một kỹ thuật viên | 200 / 400 / 404 |
+| POST | `/api/technicians` | Tạo kỹ thuật viên `{center_id, full_name, level}` | 201 / 400 (VALIDATION_ERROR, CENTER_NOT_FOUND) |
+| PUT | `/api/technicians/{id}` | Sửa kỹ thuật viên | 200 / 400 / 404 / 409 TECHNICIAN_INACTIVE |
+| DELETE | `/api/technicians/{id}` | Ngừng làm việc (`is_active = false`, QT-13) | 200 / 404 |
+
+Ràng buộc: `phone` đúng 10 chữ số, bắt đầu bằng 0 và duy nhất; `level` ∈ {SO_CAP, TRUNG_CAP, CAO_CAP}; `full_name` bắt buộc, ≤ 120 ký tự.
+
+## 5. Tự kiểm
 
 Mọi endpoint đều truy vết được về User Story trong bảng truy vết mục 6 của SRS: API1 → US1, API2 → US2, API3 → US2/US3/US4, API4 → US5.
