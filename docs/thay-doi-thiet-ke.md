@@ -4,7 +4,7 @@
 
 ## Sau phản hồi Bài tập 1 (buổi 8, ngày 19/10/2026)
 
-Mỗi điểm ghi đủ bốn dòng: phản hồi – quyết định – lý do – ảnh hưởng. Các điểm TD-01 đến TD-09 là sai lệch so với thiết kế BT1 phát hiện khi hiện thực Sprint 1 (đề BT2 yêu cầu ghi lại mọi sai lệch); góp ý của giảng viên ghi tiếp từ TD-10. Khi nhận phản hồi BT2 sẽ nối tiếp vào cuối file.
+Mỗi điểm ghi đủ bốn dòng: phản hồi – quyết định – lý do – ảnh hưởng. TD-01 đến TD-09 là sai lệch so với thiết kế BT1 phát hiện khi hiện thực Sprint 1 (đề BT2 yêu cầu ghi lại mọi sai lệch). TD-10 đến TD-13 là các điểm giảng viên góp ý cho BT1 (điểm BT1: 9/10 – Đầy đủ 8.0 · Kỹ thuật 9.5 · Nhất quán 9.75 · Trình bày 8.0). Khi nhận phản hồi BT2 sẽ nối tiếp vào cuối file.
 
 ### TD-01 Bổ sung CRUD cho hai thực thể customer và technician
 - Phản hồi của GV : Không có – tự phát hiện khi đối chiếu đề BT2: API contract BT1 chỉ có API1–API4, không thực thể nào đủ bốn thao tác tạo – đọc – sửa – xoá (yêu cầu S1).
@@ -60,8 +60,26 @@ Mỗi điểm ghi đủ bốn dòng: phản hồi – quyết định – lý do
 - Lý do : Theo Buổi 7 (kiểm ba tầng: validator – service – ràng buộc CSDL) và cấu trúc tối thiểu của đề BT2 (routes/ services/ repositories/ validators/). Hai thư mục mới vẫn thuộc lớp trình bày nên không đổi số lớp và chiều phụ thuộc.
 - Ảnh hưởng : src/backend có routes/, controllers/, validators/, middlewares/ (lớp trình bày), services/ (nghiệp vụ), repositories/ (truy cập dữ liệu). Sẽ vẽ trong docs/architecture-thuc-te.drawio trước khi nộp BT2.
 
-### TD-10 (điền theo phản hồi của giảng viên cho BT1)
-- Phản hồi của GV : [ghi nguyên văn điểm GV góp ý]
-- Quyết định : [SỬA hoặc GIỮ NGUYÊN]
-- Lý do : [lý do kỹ thuật cụ thể, gắn với phạm vi L8]
-- Ảnh hưởng : [phần nào của SRS / ERD / API / mã nguồn thay đổi]
+### TD-10 Nộp một file PDF duy nhất, đúng tên
+- Phản hồi của GV : Em nộp file .docx; đề yêu cầu một file PDF duy nhất BT1_<MSSV>_<HoTen>.pdf.
+- Quyết định : SỬA
+- Lý do : Sai định dạng hoặc tên file là lỗi hình thức bị trừ điểm ở tiêu chí 1; mục 3.1 đề BT2 nhắc lại đúng yêu cầu này.
+- Ảnh hưởng : BT2 nộp duy nhất BT2_2374802010032_HaGiaThienBao.pdf (xuất từ Word, mở lại kiểm tra trước khi nộp). Không ảnh hưởng thiết kế hệ thống.
+
+### TD-11 Bổ sung dòng cam kết vào bảng khai báo AI
+- Phản hồi của GV : Phụ lục A thiếu dòng cam kết “Tôi xác nhận đã đọc, hiểu và chịu trách nhiệm...” kèm họ tên, MSSV, ngày.
+- Quyết định : SỬA
+- Lý do : Chính sách liêm chính AI của học phần yêu cầu sinh viên hiểu và chịu trách nhiệm mọi phần nộp, kể cả phần có AI hỗ trợ; dòng cam kết là phần bắt buộc của phụ lục.
+- Ảnh hưởng : Thêm dòng cam kết kèm họ tên, MSSV, ngày vào cuối docs/ai-disclosure.md; phụ lục khai báo AI của báo cáo BT2 có cùng dòng cam kết.
+
+### TD-12 Rút gọn báo cáo, để API contract trong repo
+- Phản hồi của GV : Bài dài 31 trang trong khi gợi ý 6–9 trang. API contract nên để trong repo (docs/api-contract.md) thay vì đưa toàn bộ vào PDF.
+- Quyết định : SỬA
+- Lý do : Đề BT2 gợi ý 6–9 trang; tài liệu chi tiết nằm trong repo được cập nhật cùng mã nguồn, PDF chỉ tóm tắt và dẫn link nên không bị lệch phiên bản.
+- Ảnh hưởng : Báo cáo BT2 theo đúng khung 7 mục + phụ lục của đề, mỗi mục giữ độ dài gợi ý; API, SRS, nhật ký thay đổi chỉ dẫn link tới docs/ trong repo tại tag v0.2. docs/api-contract.md là nguồn duy nhất của hợp đồng API.
+
+### TD-13 Viết kiểm thử API3 cho AC2.1–AC2.4 trước giao diện M1
+- Phản hồi của GV : Gợi ý cho BT2: bắt đầu từ API3 và các AC2.1–AC2.4, viết test cho gửi trùng (409), hết hạn (410) trước khi hoàn thiện giao diện M1.
+- Quyết định : SỬA (làm theo góp ý)
+- Lý do : API3 tập trung ba quy tắc BR-L8-01, BR-L8-02, BR-L8-05; khoá đúng hành vi bằng kiểm thử trước thì M1 chỉ cần hiển thị theo mã lỗi đã cố định.
+- Ảnh hưởng : Thêm tests/api.survey.test.js: 7 kiểm thử HTTP cho AC2.1, AC2.2 (409 ở API2 và API3), AC2.3 (410, kèm biên tròn 7 ngày), AC2.4 (400), token không tồn tại (404). Tổng 35 kiểm thử PASS. M1 làm ở buổi 10 dựa trên các mã 201/400/404/409/410 này.

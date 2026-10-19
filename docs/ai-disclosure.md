@@ -11,6 +11,11 @@
 | Claude (Anthropic) | Xử lý lỗi tập trung, ánh xạ mã lỗi nghiệp vụ → HTTP, phản ứng khi CSDL tắt | `src/backend/middlewares/error-handler.js`, `src/backend/errors/app-error.js` | Gửi body không phải JSON → 400 `INVALID_JSON`; tắt dịch vụ PostgreSQL rồi gọi `/api/customers` → 503 `DB_UNAVAILABLE`, server không sập; bật lại thì chạy tiếp |
 | Claude (Anthropic) | Soạn nhật ký thay đổi thiết kế, cập nhật README, api-contract | `docs/thay-doi-thiet-ke.md`, `README.md`, `docs/api-contract.md` | Đối chiếu từng TD với SRS, ERD, API contract BT1; làm theo README từ thư mục trống để kiểm các bước |
 
+| Claude (Anthropic) | Sinh kiểm thử HTTP cho API3 theo góp ý GV (AC2.1–AC2.4, 409, 410) | `tests/api.survey.test.js` | Chạy `npm test` (35 PASS); đổi tạm mã 410 trong `middlewares/error-handler.js` thành 400 để xác nhận kiểm thử AC2.3 báo FAIL, rồi trả lại |
+
+**Cam kết:** Tôi xác nhận đã đọc, hiểu và chịu trách nhiệm về toàn bộ nội dung và mã nguồn nộp kèm, kể cả các phần có công cụ AI hỗ trợ được khai báo ở trên; tôi giải thích được mọi dòng mã khi được yêu cầu.
+Họ tên: Hà Gia Thiên Bảo – MSSV: 2374802010032 – Ngày: 19/10/2026
+
 ## Bài tập 1 và các buổi trước
 
 | Ngày | Công cụ | Phần áp dụng | Cách dùng (tóm tắt yêu cầu) | Đã chỉnh sửa / kiểm chứng gì |
