@@ -37,12 +37,13 @@ cd src/backend
 npm test
 ```
 
-28 kiểm thử trong `tests/` (Jest + Supertest) thuộc ba loại, mỗi tên kiểm thử ghi rõ loại ở đầu:
+35 kiểm thử trong `tests/` (Jest + Supertest) thuộc ba loại, mỗi tên kiểm thử ghi rõ loại ở đầu:
 
 | Loại | Ví dụ | Tệp |
 |---|---|---|
 | Luồng đúng | AC1.1 phiếu Đã đóng → tạo đúng 1 lời mời, token 64 hex, hạn 7 ngày | `tests/invitation.service.test.js` |
 | Giá trị biên | BR-L8-01 tròn 7 ngày còn nhận, trễ 1 ms là hết hạn; CSAT 1/5 hợp lệ, 0/6 bị từ chối; nhận xét 500/501 ký tự | `tests/survey.service.test.js` |
+| Luồng đúng / Dữ liệu sai qua HTTP (theo góp ý GV) | API3 AC2.1–AC2.4: gửi trùng → 409, hết hạn → 410, thiếu CSAT → 400 | `tests/api.survey.test.js` |
 | Dữ liệu sai | Thiếu `csat_score` → 400 kèm `field: "csat_score"`; body không phải JSON → 400; trùng số điện thoại → 409 | `tests/api.validation.test.js`, `tests/customer.service.test.js` |
 
 Kiểm thử tự dựng dữ liệu bằng repository giả trong bộ nhớ (`tests/fakes/`), không phụ thuộc dữ liệu trên máy chạy.
@@ -71,7 +72,7 @@ Token mẫu trong seed: `aaaa…` và `eeee…` còn hạn · `bbbb…` hết h�
 - [x] Migration `001_init_schema.sql` theo DDL BT1, chạy lại không lỗi; seed dữ liệu mẫu chạy lại không nhân đôi
 - [x] CRUD đủ 4 thao tác cho 2 thực thể `customer`, `technician` qua routes → services → repositories
 - [x] API1 tạo lời mời (QT-10), API2 mở khảo sát, API3 gửi phản hồi (BR-L8-01, BR-L8-02, BR-L8-05)
-- [x] 28 kiểm thử thuộc 3 loại, chạy bằng `npm test`, PASS
+- [x] 35 kiểm thử thuộc 3 loại, chạy bằng `npm test`, PASS
 - [x] CSDL tắt → API trả `503 DB_UNAVAILABLE` sau ≤ 3 giây, không treo, không sập
 - [ ] API4 danh sách phản hồi (US5) + đăng nhập JWT, phân quyền theo trung tâm (QT-14) – buổi 9
 - [ ] Frontend React 3 màn hình M1–M3 với 3 trạng thái đang tải / rỗng / lỗi – buổi 10
