@@ -1,28 +1,13 @@
-require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
-const express = require('express');
-const { Pool } = require('pg');
+// Điểm khởi động backend: npm start
+const env = require('./config/env');
+const { createPool } = require('./db/pool');
+const { buildServices } = require('./container');
+const { createApp } = require('./app');
 
-const app = express();
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+const db = createPool();
+db.on('error', (err) => console.error('[db pool]', err.message)); // CSDL rớt kết nối không làm sập tiến trình
+const app = createApp({ services: buildServices(db), db });
+
+app.listen(env.appPort, () => {
+  console.log(`Smart CRM L8 API chạy tại http://localhost:${env.appPort}`);
 });
-
-app.get('/', (req, res) => res.send('Hello Smart CRM'));
-
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
-
-app.get('/db-check', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT NOW() AS server_time');
-    res.json({ status: 'OK', ...result.rows[0] });
-  } catch (err) {
-    res.status(500).json({ status: 'ERROR', message: err.message });
-  }
-});
-
-const port = process.env.APP_PORT || 3000;
-app.listen(port, () => console.log('Server chạy tại http://localhost:' + port));
