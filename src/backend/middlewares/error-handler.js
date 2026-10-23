@@ -18,6 +18,9 @@ const HTTP_STATUS = {
   CUSTOMER_INACTIVE: 409,
   TECHNICIAN_INACTIVE: 409,
   INVITATION_EXPIRED: 410,
+  UNAUTHORIZED: 401,
+  INVALID_CREDENTIALS: 401,
+  FORBIDDEN: 403,
 };
 
 // Mã lỗi kết nối của pg/Node khi CSDL tắt hoặc sai cấu hình.

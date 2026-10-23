@@ -8,7 +8,7 @@ async function reset() {
   const client = new Client({ ...env.db, connectionTimeoutMillis: 3000 });
   await client.connect();
   try {
-    await client.query(`DROP TABLE IF EXISTS survey_response, survey_invitation, ticket, customer,
+    await client.query(`DROP TABLE IF EXISTS app_user, survey_response, survey_invitation, ticket, customer,
                         technician, service_center, schema_migrations CASCADE`);
     console.log('Đã xoá các bảng cũ.');
   } finally {

@@ -13,4 +13,6 @@ module.exports = {
   appPort: Number(process.env.APP_PORT || 3000),
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
   invitationValidDays: Number(process.env.INVITATION_VALID_DAYS || 7), // BR-L8-01
+  secretKey: process.env.SECRET_KEY || '',          // khoá ký JWT – bắt buộc, kiểm ở index.js
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '8h',
 };

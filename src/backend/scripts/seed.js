@@ -5,7 +5,7 @@ const { Client } = require('pg');
 const env = require('../config/env');
 
 const SEEDS_DIR = path.resolve(__dirname, '../../../seeds');
-const TABLES = ['service_center', 'technician', 'customer', 'ticket', 'survey_invitation', 'survey_response'];
+const TABLES = ['service_center', 'technician', 'customer', 'ticket', 'survey_invitation', 'survey_response', 'app_user'];
 
 async function seed() {
   const client = new Client({ ...env.db, connectionTimeoutMillis: 3000 });
