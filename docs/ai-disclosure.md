@@ -13,8 +13,13 @@
 
 | Claude (Anthropic) | Sinh kiểm thử HTTP cho API3 theo góp ý GV (AC2.1–AC2.4, 409, 410) | `tests/api.survey.test.js` | Chạy `npm test` (35 PASS); đổi tạm mã 410 trong `middlewares/error-handler.js` thành 400 để xác nhận kiểm thử AC2.3 báo FAIL, rồi trả lại |
 
+| Claude (Anthropic) | Sprint 2 – sinh mã đăng nhập JWT, API4, báo cáo CSAT/NPS theo kỹ thuật viên và theo tháng | `migrations/002_app_user.sql`, `services/auth.service.js` (`login`, `verify`), `services/password.js`, `services/response.service.js` (`list`), `services/response.contract.js` (`toResponseView`), `services/report.service.js` (`computeMetrics`, `byTechnician`, `monthlyTrend`), `repositories/report.repository.js`, `middlewares/auth.js` | Chạy `npm test` (57 PASS); tính tay NPS và tỉ lệ CSAT một tháng từ bảng `survey_response` trong pgAdmin rồi so với số trên M3; đăng nhập `nv.q10` thử xin `center_id=2` → 403, mở M3 → 403; so số điện thoại che/không che giữa `nv.q10` và `ql.q10` |
+| Claude (Anthropic) | Sinh dữ liệu mẫu mô phỏng seed 42 và tài khoản mẫu | `src/backend/scripts/gen-sample-data.js`, `seeds/002_sample_history.sql`, `seeds/003_app_user.sql` | Chạy `npm run gen:sample` hai lần, so sánh tệp không đổi; chạy `npm run seed` hai lần, số dòng 7 bảng không đổi; kiểm mọi phản hồi mẫu nằm trong hạn 7 ngày của lời mời bằng truy vấn SQL |
+| Claude (Anthropic) | Sinh frontend React: lớp client API, DataState, 4 màn hình | `src/frontend/src/api/*.js`, `components/DataState.jsx`, `components/useAsync.js`, `pages/*.jsx` | Tìm `fetch(` trong `pages/` ra rỗng; chạy toàn luồng chính theo `docs/luong-chinh.md`; tắt backend để thấy trạng thái lỗi và bấm Thử lại; mở M1 ở khổ 360 px không cuộn ngang |
+| Claude (Anthropic) | Soạn tài liệu Sprint 2 | `docs/luong-chinh.md`, `docs/thay-doi-thiet-ke.md` (TD-14 → TD-19), `docs/api-contract.md` mục 5, `README.md` | Làm theo README từ thư mục clone mới; đối chiếu từng TD với SRS, ERD, API contract |
+
 **Cam kết:** Tôi xác nhận đã đọc, hiểu và chịu trách nhiệm về toàn bộ nội dung và mã nguồn nộp kèm, kể cả các phần có công cụ AI hỗ trợ được khai báo ở trên; tôi giải thích được mọi dòng mã khi được yêu cầu.
-Họ tên: Hà Gia Thiên Bảo – MSSV: 2374802010032 – Ngày: 19/10/2026
+Họ tên: Hà Gia Thiên Bảo – MSSV: 2374802010032 – Ngày: 19/10/2026 (cập nhật 23/10/2026)
 
 ## Bài tập 1 và các buổi trước
 

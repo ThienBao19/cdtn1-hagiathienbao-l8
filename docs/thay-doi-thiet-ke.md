@@ -83,3 +83,41 @@ Mỗi điểm ghi đủ bốn dòng: phản hồi – quyết định – lý do
 - Quyết định : SỬA (làm theo góp ý)
 - Lý do : API3 tập trung ba quy tắc BR-L8-01, BR-L8-02, BR-L8-05; khoá đúng hành vi bằng kiểm thử trước thì M1 chỉ cần hiển thị theo mã lỗi đã cố định.
 - Ảnh hưởng : Thêm tests/api.survey.test.js: 7 kiểm thử HTTP cho AC2.1, AC2.2 (409 ở API2 và API3), AC2.3 (410, kèm biên tròn 7 ngày), AC2.4 (400), token không tồn tại (404). Tổng 35 kiểm thử PASS. M1 làm ở buổi 10 dựa trên các mã 201/400/404/409/410 này.
+
+## Trong Sprint 2 (buổi 9–10, ngày 23/10/2026)
+
+### TD-14 Thêm bảng app_user và đăng nhập JWT
+- Phản hồi của GV : Không có – tự phát hiện: sơ đồ kiến trúc BT1 ghi controller “đọc vai trò + center_id từ JWT” nhưng ERD không có bảng tài khoản; đề BT2 yêu cầu xác thực đăng nhập ở mức cơ bản.
+- Quyết định : SỬA
+- Lý do : Không có tài khoản thì không áp dụng được QT-14 (chỉ xem trung tâm mình) và QT-15 (chỉ Quản lý trung tâm thấy số điện thoại đầy đủ) cho M2, M3.
+- Ảnh hưởng : Thêm migrations/002_app_user.sql (bảng thứ 7: user_id, username, password_hash, full_name, role, center_id, is_active); mật khẩu băm scrypt; seeds/003 có 4 tài khoản mẫu; POST /api/auth/login; middlewares/auth.js. Cần bổ sung app_user vào erd.drawio.
+
+### TD-15 Frontend gọi /api qua proxy của Vite, không bật CORS ở backend
+- Phản hồi của GV : Không có – tự phát hiện khi ghép frontend với backend (lỗi CORS là lỗi tích hợp hay gặp nhất của track SE theo Buổi 10).
+- Quyết định : SỬA
+- Lý do : Trình duyệt chỉ thấy một origin (localhost:5173) nên không phát sinh CORS, backend không cần thêm thư viện và cấu hình riêng cho từng môi trường.
+- Ảnh hưởng : src/frontend/vite.config.js chuyển /api sang http://localhost:3000. Khi đóng gói ở BT3 sẽ phục vụ frontend và API cùng một origin.
+
+### TD-16 Dữ liệu mẫu mô phỏng có seed 42 thay cho bộ CSV của case study
+- Phản hồi của GV : Không có – tự phát hiện: các tệp tickets_history.csv, survey_responses.csv nêu trong SRS mục 5 chưa có trong repo, trong khi Buổi 10 yêu cầu chạy luồng chính trên dữ liệu mẫu đủ lớn.
+- Quyết định : SỬA
+- Lý do : SRS mục 5 cho phép “dữ liệu sinh mô phỏng với seed 42”; sinh đúng quy mô case study (~260 phiếu/tháng, 6 trung tâm) để dashboard có số liệu theo tháng và theo kỹ thuật viên; cùng seed thì cùng kết quả nên tái lập được.
+- Ảnh hưởng : Thêm src/backend/scripts/gen-sample-data.js và seeds/002_sample_history.sql (2.400 phiếu, 2.225 lời mời, 1.474 phản hồi, 01–10/2026). Số liệu trên dashboard là số mô phỏng – ghi rõ trong README. Khi có bộ CSV thật sẽ thay bằng script nạp CSV.
+
+### TD-17 Làm rõ hợp đồng hai API báo cáo (US6, US7)
+- Phản hồi của GV : Không có – tự phát hiện: API contract BT1 chỉ liệt kê hai endpoint báo cáo mức SHOULD, chưa có hình dạng dữ liệu trả về.
+- Quyết định : SỬA
+- Lý do : Buổi 9: hợp đồng phải nêu hình dạng, ý nghĩa và hành vi khi không có dữ liệu; mỗi con số cần mốc so sánh để người quản lý hành động được.
+- Ảnh hưởng : api-contract.md mục 5: chỉ số null khi không có phản hồi (không phải 0); mỗi chỉ số kèm tháng trước và toàn hệ thống; tháng tính theo ngày khách gửi phản hồi, giờ Việt Nam; chỉ QUAN_LY được gọi. ReportRepository chỉ trả số đếm, công thức BR-L8-03 nằm ở ReportService.
+
+### TD-18 Thêm màn hình Đăng nhập ngoài ba màn hình M1–M3
+- Phản hồi của GV : Không có – hệ quả của TD-14.
+- Quyết định : SỬA
+- Lý do : M2, M3 cần biết vai trò và trung tâm của người dùng; khi nhận 401 phải có nơi để quay về (Buổi 10).
+- Ảnh hưởng : Route /dang-nhap; M1 vẫn mở công khai bằng link có mã lời mời. Wireframe cần bổ sung khung Đăng nhập đơn giản.
+
+### TD-19 Giữ nguyên khuôn lỗi {"error": {"code", "message", "field"}}
+- Phản hồi của GV : Không có – câu hỏi tự đặt ra khi đọc Buổi 9 (ví dụ của bài giảng dùng {"error", "message", "fields"} ở cùng một cấp).
+- Quyết định : GIỮ NGUYÊN
+- Lý do : Khuôn lỗi đã công bố từ BT1 và đang được kiểm thử khoá lại; đổi tên hoặc đổi cấp trường là thay đổi phá vỡ (Buổi 9) mà không thêm lợi ích. Tinh thần của Buổi 9 vẫn được giữ: có mã cho máy đọc, câu cho người đọc, tên trường sai; frontend rẽ nhánh theo error.code.
+- Ảnh hưởng : Không đổi mã. src/frontend/src/api/client.js quy mọi lỗi (kể cả mất kết nối) về ApiError {status, code, message, field}.
