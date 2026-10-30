@@ -1,10 +1,13 @@
 // Tạo ứng dụng Express từ các service đã nối sẵn (test có thể truyền service dùng repository giả).
 const express = require('express');
 const { createApiRouter } = require('./routes');
-const { errorHandler, notFoundHandler } = require('./middlewares/error-handler');
+const { createErrorHandler, notFoundHandler } = require('./middlewares/error-handler');
+const { requestContext } = require('./middlewares/request-context');
 
-function createApp({ services, db }) {
+function createApp({ services, db, logger }) {
   const app = express();
+  app.disable('x-powered-by');
+  app.use(requestContext);
   app.use(express.json({ limit: '20kb' }));
 
   app.get('/', (req, res) => res.send('Hello Smart CRM – L8 CSAT/NPS'));
@@ -18,7 +21,7 @@ function createApp({ services, db }) {
 
   app.use('/api', createApiRouter(services));
   app.use(notFoundHandler);
-  app.use(errorHandler);
+  app.use(createErrorHandler(logger));
   return app;
 }
 

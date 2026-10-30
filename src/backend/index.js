@@ -3,6 +3,7 @@ const env = require('./config/env');
 const { createPool } = require('./db/pool');
 const { buildServices } = require('./container');
 const { createApp } = require('./app');
+const { logger } = require('./logger');
 
 // Thiếu khoá ký JWT thì dừng ngay với thông báo rõ ràng, không chạy nửa vời rồi lỗi khi đăng nhập.
 if (!env.secretKey || env.secretKey.length < 16) {
@@ -11,9 +12,10 @@ if (!env.secretKey || env.secretKey.length < 16) {
 }
 
 const db = createPool();
-db.on('error', (err) => console.error('[db pool]', err.message)); // CSDL rớt kết nối không làm sập tiến trình
+db.on('error', (err) => logger.error({ err }, 'kết nối CSDL bị ngắt')); // CSDL rớt kết nối không làm sập tiến trình
 const app = createApp({ services: buildServices(db), db });
 
 app.listen(env.appPort, () => {
-  console.log(`Smart CRM L8 API chạy tại http://localhost:${env.appPort}`);
+  console.log(`Smart CRM L8 API chạy tại http://localhost:${env.appPort}`); // dòng cho người chạy README đọc
+  logger.info({ port: env.appPort }, 'API đã khởi động');
 });
