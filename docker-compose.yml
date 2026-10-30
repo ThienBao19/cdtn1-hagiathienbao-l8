@@ -1,0 +1,50 @@
+# Dựng toàn bộ hệ thống bằng 2 lệnh:  cp .env.example .env   rồi   docker compose up --build
+# Mở http://localhost:8080 (giao diện) – API ở http://localhost:3000
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-smartcrm}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}          # lấy từ .env, không ghi cứng
+    volumes:
+      - dbdata:/var/lib/postgresql/data          # giữ dữ liệu khi container tắt
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    environment:
+      DB_HOST: db                                # TÊN DỊCH VỤ, không phải localhost
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-smartcrm}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_PORT: 3000
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      INVITATION_VALID_DAYS: ${INVITATION_VALID_DAYS:-7}
+      FRONTEND_URL: http://localhost:${WEB_PORT:-8080}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${API_PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy                # chờ CSDL SẴN SÀNG mới khởi động API
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  dbdata:
