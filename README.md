@@ -9,7 +9,7 @@
 
 Khi một phiếu bảo hành chuyển sang trạng thái Đã đóng, hệ thống tạo đúng một lời mời khảo sát có mã lời mời ngẫu nhiên và hạn trả lời 7 ngày (QT-10, BR-L8-01). Khách hàng mở link khảo sát trên điện thoại (M1), chấm điểm CSAT 1–5, điểm NPS 0–10 và để lại nhận xét; mỗi lời mời chỉ nhận một phản hồi và phản hồi không sửa được (BR-L8-02, BR-L8-05). Nhân viên đăng nhập để tra cứu danh sách phản hồi của trung tâm mình (M2), phản hồi CSAT ≤ 2 mang nhãn “Cần chăm sóc”; Quản lý trung tâm xem chỉ số CSAT/NPS theo kỹ thuật viên và xu hướng theo tháng có mốc so sánh (M3). Backend Node.js + Express tách lớp routes/controllers → services → repositories trên PostgreSQL; frontend React (Vite) gọi API qua một lớp client riêng.
 
-- **Người dùng:** Khách hàng, Nhân viên (chăm sóc khách hàng), Quản lý trung tâm; hệ thống ngoài: Hệ thống quản lý phiếu bảo hành (mô phỏng bằng lời gọi API1).
+- **Người dùng:** Nhân viên (chăm sóc khách hàng), Quản lý trung tâm; hệ thống ngoài: Hệ thống quản lý phiếu bảo hành (mô phỏng bằng lời gọi API1).
 - **Không làm:** gửi SMS/Zalo/email thật (mô phỏng bằng link có mã lời mời); tiếp nhận, phân công phiếu bảo hành (thuộc L2, L4); phân tích cảm xúc nhận xét.
 
 ## 2. Yêu cầu môi trường
