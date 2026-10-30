@@ -18,11 +18,14 @@ Khi một phiếu bảo hành chuyển sang trạng thái Đã đóng, hệ th�
 - PostgreSQL 16 trở lên (máy em dùng PostgreSQL 18); user có quyền tạo database (mặc định `postgres`)
 - Biến môi trường: xem `.env.example` (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `APP_PORT`, `FRONTEND_URL`, `INVITATION_VALID_DAYS`, `SECRET_KEY`, `JWT_EXPIRES_IN`). `SECRET_KEY` bắt buộc, tối thiểu 16 ký tự.
 - Trình duyệt Chrome/Edge bản mới; cổng 3000 (API) và 5173 (giao diện) còn trống
-- Không cần Docker ở Bài tập 2; kiểm thử dùng repository giả nên **không cần PostgreSQL để chạy `npm test`**
+- Kiểm thử dùng repository giả nên **không cần PostgreSQL để chạy `npm test`**
+- Docker Desktop (Compose v2) – chỉ cần nếu chạy theo cách 2 ở mục 3
 
 ## 3. Cài đặt và chạy (mỗi bước một lệnh, chạy từ thư mục gốc repo)
 
-**Backend – terminal 1**
+**Cách 1 – chạy trực tiếp (cách chính)**
+
+*Backend – terminal 1*
 
 1. Tạo file cấu hình: `cp .env.example .env` (Windows CMD: `copy .env.example .env`) rồi sửa `DB_PASSWORD` cho đúng mật khẩu PostgreSQL và đặt `SECRET_KEY` là một chuỗi ngẫu nhiên ≥ 16 ký tự.
 2. Vào thư mục backend: `cd src/backend`
@@ -31,11 +34,16 @@ Khi một phiếu bảo hành chuyển sang trạng thái Đã đóng, hệ th�
 5. Nạp dữ liệu mẫu: `npm run seed`
 6. Khởi động API: `npm start` → `Smart CRM L8 API chạy tại http://localhost:3000`
 
-**Frontend – terminal 2 (để terminal 1 chạy tiếp)**
+*Frontend – terminal 2 (để terminal 1 chạy tiếp)*
 
 7. Vào thư mục frontend: `cd src/frontend`
 8. Cài thư viện: `npm ci`
 9. Khởi động giao diện: `npm run dev` → mở http://localhost:5173
+
+**Cách 2 – Docker Compose (tuỳ chọn, 2 lệnh, không cần cài Node/PostgreSQL)**
+
+1. `cp .env.example .env` (Windows CMD: `copy .env.example .env`)
+2. `docker compose up --build` → giao diện http://localhost:8080, API http://localhost:3000 (container `api` tự chạy migrate + seed trước khi mở API). Dừng: Ctrl + C rồi `docker compose down`; xoá cả dữ liệu: `docker compose down -v`.
 
 Dữ liệu mẫu: seed 001 (dữ liệu nhỏ có token cố định để thử API) + seed 002 (lịch sử 01–10/2026 **mô phỏng** có seed 42 theo quy mô case study: 24 kỹ thuật viên, ~1.200 khách, 2.409 phiếu, 2.230 lời mời, 1.476 phản hồi – xem TD-16) + seed 003 (tài khoản mẫu). Chạy lại bước 4 và 5 bao nhiêu lần cũng không lỗi và không nhân đôi dữ liệu. Muốn dữ liệu về trạng thái ban đầu (ví dụ token `aaaa…` đã bị dùng khi thử): `npm run db:reset`.
 
@@ -54,7 +62,7 @@ cd src/backend
 npm test
 ```
 
-57 kiểm thử trong `tests/` (Jest + Supertest), mỗi tên ghi rõ loại ở đầu: **[Luồng đúng]**, **[Giá trị biên]**, **[Dữ liệu sai]**. Kiểm thử tự dựng dữ liệu bằng repository giả (`tests/fakes/`), không cần CSDL, không phụ thuộc dữ liệu trên máy chạy.
+65 kiểm thử trong `tests/` (Jest + Supertest), mỗi tên ghi rõ loại ở đầu: **[Luồng đúng]**, **[Giá trị biên]**, **[Dữ liệu sai]**. Kiểm thử tự dựng dữ liệu bằng repository giả (`tests/fakes/`), không cần CSDL, không phụ thuộc dữ liệu trên máy chạy.
 
 | Tệp | Kiểm cái gì |
 |---|---|
@@ -64,6 +72,8 @@ npm test
 | `report.service.test.js` | BR-L8-03 công thức NPS và tỉ lệ CSAT, biên NPS 9/6, không có phản hồi → null, chỉ Quản lý được xem |
 | `auth.service.test.js` | Đăng nhập đúng/sai, 401 khi thiếu hoặc sai token |
 | `customer.service.test.js`, `api.validation.test.js` | CRUD khách hàng, số điện thoại trùng, body sai JSON → 400 |
+| `logging.test.js` | Log JSON có requestId, che mật khẩu/số điện thoại; CSDL tắt → 503 kèm mã tra cứu, ghi ERROR đúng một lần |
+| `db-pool.test.js` | Test hồi quy BUG-001 ([docs/bug-log.md](docs/bug-log.md)): BIGINT đọc từ CSDL là số |
 
 ## 5. Kiểm tra hệ thống đã chạy đúng – luồng chính end-to-end
 
@@ -76,25 +86,25 @@ Chi tiết sáu bước và kết quả quan sát được: [docs/luong-chinh.md
 4. Đăng xuất, đăng nhập `ql.q10` → **Dashboard CSAT/NPS**, chọn tháng hiện tại → chỉ số có mốc so sánh với tháng trước và toàn hệ thống.
 5. Ba trạng thái: lọc từ 01/12/2026 đến 31/12/2026 → trạng thái rỗng; tắt backend (Ctrl + C ở terminal 1) rồi bấm **Tìm** → thông báo lỗi có nút **Thử lại**; bật lại `npm start`, bấm **Thử lại** → dữ liệu hiện lại.
 
+Log: backend ghi mỗi sự kiện một dòng JSON ra terminal (mức theo `LOG_LEVEL`); lỗi 500/503 trả “Mã tra cứu” trùng `requestId` trong log. Các lỗi đã gỡ: [docs/bug-log.md](docs/bug-log.md).
+
 Kiểm tra nhanh bằng API: `curl -s localhost:3000/db-check` → `{"status":"OK",...}`. Danh sách endpoint: [docs/api-contract.md](docs/api-contract.md). Token mẫu trong seed 001: `aaaa…`, `eeee…` còn hạn · `bbbb…` hết hạn · `cccc…`, `dddd…` đã trả lời (mỗi token là 64 lần lặp một chữ cái).
 
-## 6. Trạng thái hiện tại (buổi 10 – Sprint 2)
+## 6. Trạng thái hiện tại (buổi 12 – nộp Bài tập 2, tag `v0.2`)
 
-- [x] Sprint 1 (buổi 8): migration + seed chạy lại không nhân đôi; CRUD `customer`, `technician`; API1–API3
-- [x] Đăng nhập JWT, bảng `app_user` (TD-14); API4 danh sách phản hồi với QT-14, QT-15
-- [x] Báo cáo CSAT/NPS theo kỹ thuật viên và xu hướng theo tháng, kèm mốc so sánh (US6, US7)
-- [x] Frontend React: M1 khảo sát, M2 danh sách phản hồi, M3 dashboard, Đăng nhập; mọi lời gọi qua `src/api/client.js`
-- [x] Ba trạng thái đang tải / rỗng (phân biệt “chưa có dữ liệu” và “bộ lọc không ra kết quả”) / lỗi có nút Thử lại (`DataState`)
-- [x] Luồng chính chạy end-to-end trên dữ liệu mẫu ([docs/luong-chinh.md](docs/luong-chinh.md))
-- [x] 57 kiểm thử thuộc 3 loại, PASS bằng `npm test`
-- [ ] Ảnh chụp luồng chính `docs/evidence/05…11` (em tự chụp trên máy)
-- [ ] Sơ đồ kiến trúc thực tế `docs/architecture-thuc-te.drawio`; bổ sung `app_user` vào ERD – buổi 11
-- [ ] Docker (khuyến khích), phép thử thư mục trống với link GitHub, báo cáo PDF, tag `v0.2` – buổi 11–12
+- [x] Sprint 1: migration + seed chạy lại không nhân đôi; CRUD `customer`, `technician`; API1–API3 (QT-10, BR-L8-01, BR-L8-02, BR-L8-05)
+- [x] Sprint 2: đăng nhập JWT; API4 (QT-14, QT-15); báo cáo CSAT/NPS theo KTV và theo tháng (US6, US7)
+- [x] Frontend React M1, M2, M3 + Đăng nhập, đủ ba trạng thái; luồng chính end-to-end ([docs/luong-chinh.md](docs/luong-chinh.md))
+- [x] 65 kiểm thử thuộc 3 loại PASS bằng `npm test`
+- [x] Logger JSON + mã tra cứu (TD-20); Docker Compose 3 dịch vụ (TD-21)
+- [x] Sơ đồ kiến trúc thực tế [docs/architecture-thuc-te.drawio](docs/architecture-thuc-te.drawio) ([ảnh](docs/export/architecture-thuc-te.png)); Bug Log 4 mục
+- [ ] Chưa làm (ngoài phạm vi BT2, chuyển BT3): kiểm thử tích hợp với CSDL thật, CI GitHub Actions, gửi lời mời tự động khi phiếu đổi trạng thái (hiện mô phỏng bằng API1)
 
 ## 7. Cấu trúc thư mục (ánh xạ với sơ đồ kiến trúc BT1)
 
 ```
-├── docs/                         # SRS, API contract, luồng chính, nhật ký thay đổi thiết kế, khai báo AI, ảnh minh chứng
+├── docs/                         # SRS, API contract, luồng chính, kiến trúc thực tế, bug-log, thay đổi thiết kế, khai báo AI, evidence/
+├── docker/, docker-compose.yml   # Đóng gói: api.Dockerfile, web.Dockerfile, nginx.conf (TD-21)
 ├── migrations/                   # 001 DDL BT1 · 002 app_user
 ├── seeds/                        # 001 mẫu nhỏ · 002 lịch sử mô phỏng (tự sinh) · 003 tài khoản mẫu
 ├── src/
@@ -102,12 +112,12 @@ Kiểm tra nhanh bằng API: `curl -s localhost:3000/db-check` → `{"status":"O
 │   │   ├── routes/               # Lớp trình bày: URL -> controller
 │   │   ├── controllers/          # Invitation, Survey, Response, Report, Auth, Customer, Technician Controller
 │   │   ├── validators/           # Kiểm tầng 1: kiểu, định dạng dữ liệu vào
-│   │   ├── middlewares/          # Xác thực JWT; ánh xạ mã lỗi nghiệp vụ -> mã HTTP (nơi duy nhất)
+│   │   ├── middlewares/          # requestId; xác thực JWT; ánh xạ mã lỗi -> HTTP + ghi log (nơi duy nhất)
 │   │   ├── services/             # Lớp nghiệp vụ (không có req/res/HTTP); response.contract.js = hợp đồng dữ liệu API4
 │   │   ├── repositories/         # Lớp truy cập dữ liệu: chỉ SQL
 │   │   ├── errors/, db/, config/ # AppError; pool PostgreSQL; biến môi trường
 │   │   ├── scripts/              # migrate, seed, db-reset, gen-sample-data
-│   │   └── app.js, container.js, index.js
+│   │   └── app.js, container.js, index.js, logger.js
 │   └── frontend/
 │       ├── src/api/              # client.js (lớp gọi API duy nhất) + *.api.js (hàm chuyển đổi ở ranh giới)
 │       ├── src/components/       # DataState (3 trạng thái), Layout, useAsync, format
@@ -137,3 +147,8 @@ Chi tiết từng phần, kèm cách em đã kiểm chứng: [docs/ai-disclosure
 | API contract (track SE) | `docs/api-contract.md` | — |
 
 Mở file `.drawio` bằng https://app.diagrams.net (File → Open from → Device).
+
+## 10. Nộp Bài tập 2
+
+- Báo cáo: `BT2_2374802010032_HaGiaThienBao.pdf` (nộp trên VLU E-learning, không nằm trong repo).
+- Mã nguồn chấm tại tag `v0.2`: `git clone --branch v0.2 https://github.com/ThienBao19/cdtn1-hagiathienbao-l8.git thu-nghiem` rồi làm theo mục 3.

@@ -17,9 +17,11 @@
 | Claude (Anthropic) | Sinh dữ liệu mẫu mô phỏng seed 42 và tài khoản mẫu | `src/backend/scripts/gen-sample-data.js`, `seeds/002_sample_history.sql`, `seeds/003_app_user.sql` | Chạy `npm run gen:sample` hai lần, so sánh tệp không đổi; chạy `npm run seed` hai lần, số dòng 7 bảng không đổi; kiểm mọi phản hồi mẫu nằm trong hạn 7 ngày của lời mời bằng truy vấn SQL |
 | Claude (Anthropic) | Sinh frontend React: lớp client API, DataState, 4 màn hình | `src/frontend/src/api/*.js`, `components/DataState.jsx`, `components/useAsync.js`, `pages/*.jsx` | Tìm `fetch(` trong `pages/` ra rỗng; chạy toàn luồng chính theo `docs/luong-chinh.md`; tắt backend để thấy trạng thái lỗi và bấm Thử lại; mở M1 ở khổ 360 px không cuộn ngang |
 | Claude (Anthropic) | Soạn tài liệu Sprint 2 | `docs/luong-chinh.md`, `docs/thay-doi-thiet-ke.md` (TD-14 → TD-19), `docs/api-contract.md` mục 5, `README.md` | Làm theo README từ thư mục clone mới; đối chiếu từng TD với SRS, ERD, API contract |
+| Claude (Anthropic) | Buổi 11–12 – logger JSON, requestId, Docker Compose, sơ đồ kiến trúc thực tế, Bug Log | `src/backend/logger.js`, `middlewares/request-context.js`, `middlewares/error-handler.js` (`createErrorHandler`), `docker-compose.yml`, `docker/*`, `.dockerignore`, `docs/architecture-thuc-te.drawio`, `docs/bug-log.md`, `tests/logging.test.js`, `tests/db-pool.test.js` | Chạy `npm test` (65 PASS); tắt PostgreSQL rồi gọi API → 503 kèm mã tra cứu, tìm đúng dòng log ERROR có cùng `requestId`; kiểm log không chứa mật khẩu/số điện thoại; tạm bỏ bộ chuyển kiểu BIGINT để thấy test BUG-001 FAIL rồi trả lại; chạy `docker compose up --build` trên máy em và đi lại luồng chính ở cổng 8080; mở từng link commit trong Bug Log |
+| Claude (Anthropic) | Soạn báo cáo PDF Bài tập 2 và bảng đối chiếu buổi 11–12 | `BT2_2374802010032_HaGiaThienBao.pdf` | Đối chiếu từng mục với đề BT2 mục 3.1 và checklist 10 mục Buổi 12; số liệu, ảnh lấy từ lần chạy thật trên máy em |
 
 **Cam kết:** Tôi xác nhận đã đọc, hiểu và chịu trách nhiệm về toàn bộ nội dung và mã nguồn nộp kèm, kể cả các phần có công cụ AI hỗ trợ được khai báo ở trên; tôi giải thích được mọi dòng mã khi được yêu cầu.
-Họ tên: Hà Gia Thiên Bảo – MSSV: 2374802010032 – Ngày: 19/10/2026 (cập nhật 23/10/2026)
+Họ tên: Hà Gia Thiên Bảo – MSSV: 2374802010032 – Ngày: 19/10/2026 (cập nhật 23/10/2026, 30/10/2026)
 
 ## Bài tập 1 và các buổi trước
 

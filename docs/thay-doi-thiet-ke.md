@@ -121,3 +121,24 @@ Mỗi điểm ghi đủ bốn dòng: phản hồi – quyết định – lý do
 - Quyết định : GIỮ NGUYÊN
 - Lý do : Khuôn lỗi đã công bố từ BT1 và đang được kiểm thử khoá lại; đổi tên hoặc đổi cấp trường là thay đổi phá vỡ (Buổi 9) mà không thêm lợi ích. Tinh thần của Buổi 9 vẫn được giữ: có mã cho máy đọc, câu cho người đọc, tên trường sai; frontend rẽ nhánh theo error.code.
 - Ảnh hưởng : Không đổi mã. src/frontend/src/api/client.js quy mọi lỗi (kể cả mất kết nối) về ApiError {status, code, message, field}.
+
+## Trước khi nộp Bài tập 2 (buổi 11–12, ngày 30/10/2026)
+
+### TD-20 Thêm logger JSON, mã tra cứu requestId cho lỗi 5xx
+- Phản hồi của GV : Không có – tự rà soát theo Buổi 11 (logging và xử lý lỗi xuyên lớp): middleware lỗi Sprint 1 ghi bằng console.error, không có ngữ cảnh để đối chiếu khi người dùng báo lỗi.
+- Quyết định : SỬA
+- Lý do : Mỗi dòng log cần thời điểm, ngữ cảnh, mô tả; lỗi hạ tầng phải ghi ERROR đúng một lần còn người dùng chỉ thấy thông báo chung kèm mã tra cứu; không ghi mật khẩu, token, số điện thoại (QT-15).
+- Ảnh hưởng : Thêm src/backend/logger.js (JSON ra stdout, LOG_LEVEL, tự che khoá nhạy cảm) và middlewares/request-context.js (X-Request-Id). Thông điệp lỗi 500/503 thêm “Mã tra cứu: <requestId>” – mã lỗi (code) giữ nguyên nên không phá hợp đồng (TD-19). Thêm biến LOG_LEVEL vào .env.example; tests/logging.test.js.
+
+### TD-21 Đóng gói bằng Docker Compose (ba dịch vụ db · api · web)
+- Phản hồi của GV : Không có – đề BT2 mục 2.4 đánh giá cao Dockerfile/docker-compose chạy được bằng không quá hai lệnh; Buổi 11 hướng dẫn cấu hình.
+- Quyết định : SỬA (bổ sung, không thay thế cách chạy theo README)
+- Lý do : Chặn cả năm khác biệt giữa hai máy (runtime, thư viện, CSDL, biến môi trường, dữ liệu mẫu); chuẩn bị trực tiếp cho BT3.
+- Ảnh hưởng : Thêm docker-compose.yml, docker/api.Dockerfile (migrate + seed rồi chạy API), docker/web.Dockerfile (build Vite → nginx, /api chuyển sang api:3000), docker/nginx.conf, .dockerignore; thêm API_PORT, WEB_PORT vào .env.example. Cách chạy chính vẫn là README mục 3; Docker là cách thứ hai.
+
+### TD-22 Bổ sung sơ đồ kiến trúc thực tế và Bug Log
+- Phản hồi của GV : Không có – yêu cầu của đề BT2 (docs/architecture-thuc-te.*) và Buổi 12 (docs/bug-log.md có ít nhất một mục).
+- Quyết định : SỬA
+- Lý do : Sơ đồ BT1 là sơ đồ dự kiến; báo cáo BT2 mục 2 phải là thành phần thực tế và nơi từng lớp nằm.
+- Ảnh hưởng : Thêm docs/architecture-thuc-te.drawio + docs/export/architecture-thuc-te.png (khác BT1: thêm frontend thật, middlewares, AuthService, ResponseService, UserRepository, bảng app_user, logger, Docker); docs/bug-log.md với 4 lỗi đủ 7 dòng.
+

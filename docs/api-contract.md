@@ -9,7 +9,7 @@ Lỗi trả về theo một khuôn chung:
 { "error": { "code": "VALIDATION_ERROR", "message": "Vui lòng chọn mức hài lòng", "field": "csat_score" } }
 ```
 
-Bổ sung ở BT2 (TD-05): lỗi dữ liệu vào có thêm `field` (tên trường sai); lỗi `ALREADY_RESPONDED` có thêm `details` (điểm đã chấm, AC2.2); body không phải JSON → `400 INVALID_JSON`; CSDL không kết nối được → `503 DB_UNAVAILABLE`; lỗi không lường trước → `500 INTERNAL_ERROR` (không trả lỗi thô của thư viện).
+Bổ sung ở BT2 (TD-05): lỗi dữ liệu vào có thêm `field` (tên trường sai); lỗi `ALREADY_RESPONDED` có thêm `details` (điểm đã chấm, AC2.2); body không phải JSON → `400 INVALID_JSON`; CSDL không kết nối được → `503 DB_UNAVAILABLE`; lỗi không lường trước → `500 INTERNAL_ERROR` (không trả lỗi thô của thư viện). Từ buổi 11 (TD-20): mọi phản hồi có header `X-Request-Id`; thông điệp lỗi 500/503 kèm “Mã tra cứu: <requestId>” để đối chiếu với log.
 
 ## 1. Danh sách endpoint
 
