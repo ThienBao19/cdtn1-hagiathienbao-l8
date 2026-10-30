@@ -1,10 +1,11 @@
 // npm run db:reset – xoá 6 bảng của L8 rồi migrate + seed lại từ đầu (dùng khi muốn dữ liệu mẫu "mới").
 const { Client } = require('pg');
 const env = require('../config/env');
-const { migrate } = require('./migrate');
+const { migrate, ensureDatabase } = require('./migrate');
 const { seed } = require('./seed');
 
 async function reset() {
+  await ensureDatabase(); // BUG-005: máy mới chưa có CSDL thì tạo trước, không báo lỗi "does not exist"
   const client = new Client({ ...env.db, connectionTimeoutMillis: 3000 });
   await client.connect();
   try {

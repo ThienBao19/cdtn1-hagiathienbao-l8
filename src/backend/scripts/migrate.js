@@ -61,4 +61,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { migrate };
+module.exports = { migrate, ensureDatabase };
