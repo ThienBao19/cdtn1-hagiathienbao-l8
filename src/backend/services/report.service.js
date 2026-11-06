@@ -25,6 +25,12 @@ const currentMonthVN = (now) => new Date(now.getTime() + 7 * 3600e3).toISOString
  * @returns {{responses: number, csat_avg: number|null, csat_rate: number|null, nps: number|null, nps_responses: number}}
  *   csat_avg làm tròn 2 chữ số; csat_rate là % (1 chữ số thập phân); nps là số nguyên −100..100.
  */
+/**
+ * Làm tròn tới số nguyên, nửa đơn vị làm tròn RA XA số 0 (12,5 -> 13; −12,5 -> −13) – BUG-008.
+ * Math.round làm tròn nửa đơn vị lên phía +∞ nên −12,5 -> −12, làm NPS âm lệch so với NPS dương cùng độ lớn.
+ */
+const roundHalfAwayFromZero = (x) => Math.sign(x) * Math.round(Math.abs(x));
+
 function computeMetrics(c = {}) {
   const n = c.n || 0;
   const npsN = c.nps_n || 0;
@@ -32,7 +38,7 @@ function computeMetrics(c = {}) {
     responses: n,
     csat_avg: n ? Math.round((c.csat_sum / n) * 100) / 100 : null,
     csat_rate: n ? Math.round((c.csat_good * 1000) / n) / 10 : null,
-    nps: npsN ? Math.round(((c.promoters - c.detractors) * 100) / npsN) : null,
+    nps: npsN ? roundHalfAwayFromZero(((c.promoters - c.detractors) * 100) / npsN) + 0 : null, // + 0: đổi −0 thành 0
     nps_responses: npsN,
   };
 }
