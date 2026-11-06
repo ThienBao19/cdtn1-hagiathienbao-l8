@@ -8,6 +8,8 @@ import { fmtDate } from '../components/format';
 
 const CSAT_LABELS = ['Rất không hài lòng', 'Không hài lòng', 'Bình thường', 'Hài lòng', 'Rất hài lòng'];
 const COMMENT_MAX = 500; // BR-L8-02
+// Đếm theo ký tự như backend và CSDL (emoji 👍 = 1 ký tự, .length = 2) – BUG-007
+const charLength = (s) => [...s].length;
 
 /** Lỗi nghiệp vụ khi mở link: hiện thông điệp riêng, không có nút Thử lại (thử lại cũng không đổi kết quả). */
 function ClosedNotice({ error }) {
@@ -43,7 +45,7 @@ export default function SurveyPage() {
   const submit = async (e) => {
     e.preventDefault();
     if (!csat) { setFormError('Vui lòng chọn mức hài lòng'); return; } // AC2.4 – giữ nguyên dữ liệu đã nhập
-    if (comment.trim().length > COMMENT_MAX) { setFormError(`Nhận xét tối đa ${COMMENT_MAX} ký tự`); return; }
+    if (charLength(comment.trim()) > COMMENT_MAX) { setFormError(`Nhận xét tối đa ${COMMENT_MAX} ký tự`); return; }
     setSending(true); setFormError(null);
     try {
       setDone(await submitResponse(token, { csatScore: csat, npsScore: nps, comment }));
@@ -103,7 +105,7 @@ export default function SurveyPage() {
               <fieldset>
                 <legend>3. Nhận xét thêm <span className="muted">(không bắt buộc)</span></legend>
                 <textarea rows={3} value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Điều bạn hài lòng hoặc chưa hài lòng…" />
-                <div className={`counter ${comment.trim().length > COMMENT_MAX ? 'over' : ''}`}>{comment.trim().length}/{COMMENT_MAX}</div>
+                <div className={`counter ${charLength(comment.trim()) > COMMENT_MAX ? 'over' : ''}`}>{charLength(comment.trim())}/{COMMENT_MAX}</div>
               </fieldset>
 
               {formError && <p className="form-error" role="alert">{formError}</p>}

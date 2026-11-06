@@ -10,6 +10,8 @@ const COMMENT_MAX = 500;
 const FLAG_CSAT_MAX = 2;
 
 const isFlagged = (csatScore) => csatScore <= FLAG_CSAT_MAX;
+/** Số ký tự (code point) của chuỗi – cùng cách đếm với VARCHAR(n) của PostgreSQL. */
+const charLength = (s) => [...s].length;
 
 // BR-L8-02 – kiểm miền giá trị; trả về dữ liệu đã chuẩn hoá để lưu.
 function validateResponseInput({ csat_score, nps_score, comment }) {
@@ -24,8 +26,11 @@ function validateResponseInput({ csat_score, nps_score, comment }) {
     throw new ValidationError('nps_score', 'Điểm NPS phải là số nguyên từ 0 đến 10');
   }
   let text = comment === undefined || comment === null ? null : String(comment).trim();
-  if (text !== null && text.length > COMMENT_MAX) {
-    throw new ValidationError('comment', `Nhận xét tối đa ${COMMENT_MAX} ký tự (hiện có ${text.length})`);
+  // Đếm theo KÝ TỰ (code point) như VARCHAR(500) của PostgreSQL, không theo đơn vị UTF-16 của .length:
+  // emoji như 👍 là 1 ký tự nhưng .length = 2 (BUG-007).
+  const length = text === null ? 0 : charLength(text);
+  if (length > COMMENT_MAX) {
+    throw new ValidationError('comment', `Nhận xét tối đa ${COMMENT_MAX} ký tự (hiện có ${length})`);
   }
   if (text === '') text = null;
   return { csat_score, nps_score: nps, comment: text };
