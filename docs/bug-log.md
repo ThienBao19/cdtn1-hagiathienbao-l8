@@ -60,4 +60,4 @@ Mỗi lỗi ghi đủ 7 dòng theo mẫu Buổi 11, gỡ theo bốn bước: tá
 | 4. Cách tái lập | `psql -U postgres -c "DROP DATABASE smartcrm"` rồi `cd src/backend && npm run db:reset` (5/5 lần) |
 | 5. Nguyên nhân | `db-reset.js` kết nối thẳng vào CSDL `smartcrm` để xoá bảng TRƯỚC khi gọi `migrate()` – mà bước tạo CSDL nằm bên trong `migrate()`. Thứ tự khởi tạo sai, chỉ lộ ra trên máy chưa từng chạy `migrate` |
 | 6. Cách sửa | Xuất `ensureDatabase()` từ `scripts/migrate.js` và gọi nó ở dòng đầu `reset()`; không bọc `try/catch` để nuốt lỗi |
-| 7. Commit và xác nhận | Commit `fix(db): db:reset tu tao CSDL khi may moi chua co` (link: điền sau khi push) · xoá CSDL rồi chạy `npm run db:reset` hai lần liên tiếp → cả hai lần đủ 7 bảng, số dòng không đổi |
+| 7. Commit và xác nhận | [04a70d2](https://github.com/ThienBao19/cdtn1-hagiathienbao-l8/commit/04a70d2aa59bf60d1b372be5acc9256e73409e05) – `fix(db): db:reset tu tao CSDL khi may moi chua co` · xoá CSDL rồi chạy `npm run db:reset` hai lần liên tiếp → cả hai lần đủ 7 bảng, số dòng không đổi |
