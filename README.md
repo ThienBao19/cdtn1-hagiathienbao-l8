@@ -62,10 +62,15 @@ cd src/backend
 npm test
 ```
 
-65 kiểm thử trong `tests/` (Jest + Supertest), mỗi tên ghi rõ loại ở đầu: **[Luồng đúng]**, **[Giá trị biên]**, **[Dữ liệu sai]**. Kiểm thử tự dựng dữ liệu bằng repository giả (`tests/fakes/`), không cần CSDL, không phụ thuộc dữ liệu trên máy chạy.
+77 kiểm thử trong `tests/` (Jest + Supertest), mỗi tên ghi rõ loại ở đầu: **[Luồng đúng]**, **[Giá trị biên]**, **[Dữ liệu sai]**, **[Bảo mật]**, **[Tái lập]**. Từ buổi 14, `npm test` cần **PostgreSQL đang chạy** (thông tin kết nối lấy từ `.env`): hai test integration TC-09, TC-12 dùng CSDL riêng `smartcrm_test` (đổi bằng biến `DB_NAME_TEST`, bắt buộc đuôi `_test`), tự tạo và tự xoá sạch trước mỗi test – không chạm vào CSDL `smartcrm`. Các test còn lại dùng repository giả (`tests/fakes/`) và đồng hồ cố định.
+
+Chạy lại MỘT test case của Test Report: `npx jest -t "TC-05 " --verbose` (có dấu cách sau mã). Kế hoạch và kết quả: [docs/test-plan.md](docs/test-plan.md), [docs/test-report.md](docs/test-report.md), ảnh `docs/screenshots/`. CI: `.github/workflows/ci.yml` chạy `npm ci` + `npm test` mỗi lần push (lần chạy đầu xanh – `docs/screenshots/ci-actions.png`).
 
 | Tệp | Kiểm cái gì |
 |---|---|
+| `test-cases/tc-unit.test.js` | TC-01 → TC-07 của Test Report (unit) |
+| `test-cases/tc-api.test.js` | TC-08, TC-10, TC-11 (API, Supertest): dữ liệu sai, QT-14/QT-15, không đăng nhập → 401 |
+| `test-cases/tc-integration.test.js` | TC-09, TC-12 (PostgreSQL thật): gửi trùng cùng lúc chỉ lưu 1 phản hồi; migrate + seed lần hai không đổi số dòng |
 | `invitation.service.test.js` | QT-10: chỉ phiếu Đã đóng, mỗi phiếu 1 lời mời (AC1.1–AC1.3) |
 | `survey.service.test.js`, `api.survey.test.js` | BR-L8-01 hạn 7 ngày (biên tròn 7 ngày / trễ 1 ms), BR-L8-02 miền điểm, BR-L8-05 gửi trùng 409, AC2.1–AC2.4 |
 | `response.service.test.js` | API4: QT-14 khác trung tâm → 403, AC5.3 ngày ngược, biên 366/367 ngày, hợp đồng `toResponseView`, QT-15 che số |
@@ -75,12 +80,15 @@ npm test
 | `logging.test.js` | Log JSON có requestId, che mật khẩu/số điện thoại; CSDL tắt → 503 kèm mã tra cứu, ghi ERROR đúng một lần |
 | `db-pool.test.js` | Test hồi quy BUG-001 ([docs/bug-log.md](docs/bug-log.md)): BIGINT đọc từ CSDL là số |
 
+Quy ước commit (TD-24): `<loại>(<phạm vi>): <việc cụ thể>` – loại `feat`, `fix`, `test`, `docs`, `chore`, `ci`; mỗi commit một việc; sửa bug: `fix(<phạm vi>): … (BUG-xxx)` chỉ chứa tệp của bug đó; không sửa tệp trực tiếp trên giao diện web GitHub.
+
 ## 5. Kiểm tra hệ thống đã chạy đúng – luồng chính end-to-end
 
 Chi tiết sáu bước và kết quả quan sát được: [docs/luong-chinh.md](docs/luong-chinh.md).
 
-1. Mô phỏng hệ thống quản lý phiếu báo phiếu đã đóng (terminal 3, Git Bash):
-   `curl -s -X POST localhost:3000/api/survey-invitations -H "Content-Type: application/json" -d '{"ticket_code":"BH-000106/2026"}'` → `201` kèm `survey_url`.
+1. Mô phỏng hệ thống quản lý phiếu báo phiếu đã đóng (terminal 3, Git Bash). Từ buổi 14 API1 cần đăng nhập (BUG-006), nên lấy token trước:
+   `TOKEN=$(curl -s -X POST localhost:3000/api/auth/login -H "Content-Type: application/json" -d '{"username":"nv.q10","password":"Matkhau@123"}' | node -pe "JSON.parse(require('fs').readFileSync(0)).token")`
+   `curl -s -X POST localhost:3000/api/survey-invitations -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{"ticket_code":"BH-000106/2026"}'` → `201` kèm `survey_url` (không có token → `401`).
 2. Mở `survey_url` trên trình duyệt (bật chế độ điện thoại bằng F12 → biểu tượng điện thoại), chọn CSAT 2, NPS 5, nhập nhận xét, bấm **Gửi đánh giá** → lời cảm ơn.
 3. Mở http://localhost:5173, đăng nhập `nv.q10` → **Danh sách phản hồi**, chọn CSAT tối đa ≤ 2, bấm **Tìm** → phản hồi vừa gửi ở dòng đầu, nhãn “Cần chăm sóc”, số điện thoại dạng che.
 4. Đăng xuất, đăng nhập `ql.q10` → **Dashboard CSAT/NPS**, chọn tháng hiện tại → chỉ số có mốc so sánh với tháng trước và toàn hệ thống.
@@ -90,20 +98,20 @@ Log: backend ghi mỗi sự kiện một dòng JSON ra terminal (mức theo `LOG
 
 Kiểm tra nhanh bằng API: `curl -s localhost:3000/db-check` → `{"status":"OK",...}`. Danh sách endpoint: [docs/api-contract.md](docs/api-contract.md). Token mẫu trong seed 001: `aaaa…`, `eeee…` còn hạn · `bbbb…` hết hạn · `cccc…`, `dddd…` đã trả lời (mỗi token là 64 lần lặp một chữ cái).
 
-## 6. Trạng thái hiện tại (buổi 12 – nộp Bài tập 2, tag `v0.2`)
+## 6. Trạng thái hiện tại (buổi 14 – kiểm thử, chuẩn bị Bài tập 3)
 
 - [x] Sprint 1: migration + seed chạy lại không nhân đôi; CRUD `customer`, `technician`; API1–API3 (QT-10, BR-L8-01, BR-L8-02, BR-L8-05)
 - [x] Sprint 2: đăng nhập JWT; API4 (QT-14, QT-15); báo cáo CSAT/NPS theo KTV và theo tháng (US6, US7)
 - [x] Frontend React M1, M2, M3 + Đăng nhập, đủ ba trạng thái; luồng chính end-to-end ([docs/luong-chinh.md](docs/luong-chinh.md))
-- [x] 65 kiểm thử thuộc 3 loại PASS bằng `npm test`
-- [x] Logger JSON + mã tra cứu (TD-20); Docker Compose 3 dịch vụ (TD-21)
-- [x] Sơ đồ kiến trúc thực tế [docs/architecture-thuc-te.drawio](docs/architecture-thuc-te.drawio) ([ảnh](docs/export/architecture-thuc-te.png)); Bug Log 4 mục
-- [ ] Chưa làm (ngoài phạm vi BT2, chuyển BT3): kiểm thử tích hợp với CSDL thật, CI GitHub Actions, gửi lời mời tự động khi phiếu đổi trạng thái (hiện mô phỏng bằng API1)
+- [x] Logger JSON + mã tra cứu (TD-20); Docker Compose 3 dịch vụ (TD-21); sơ đồ kiến trúc thực tế
+- [x] BT2 nộp tại tag `v0.2`; phản hồi BT2 đã ghi quyết định TD-23, TD-24
+- [x] Buổi 14: Test Plan, Test Report 12 test case (7 unit · 2 integration · 3 API) chạy thật có ảnh; Bug Log 8 mục, BUG-005 → BUG-008 mỗi bug một commit `fix`; 77 kiểm thử PASS bằng `npm test`; CI GitHub Actions
+- [ ] Còn lại cho BT3 (buổi 15–16): Deployment Guide tiếng Anh, checklist bảo mật 7 mục, API docs tiếng Anh, phép thử máy trắng bằng Docker, tag `v1.0`
 
 ## 7. Cấu trúc thư mục (ánh xạ với sơ đồ kiến trúc BT1)
 
 ```
-├── docs/                         # SRS, API contract, luồng chính, kiến trúc thực tế, bug-log, thay đổi thiết kế, khai báo AI, evidence/
+├── docs/                         # SRS, API contract, luồng chính, kiến trúc thực tế, test-plan, test-report, bug-log, thay đổi thiết kế, khai báo AI, evidence/, screenshots/
 ├── docker/, docker-compose.yml   # Đóng gói: api.Dockerfile, web.Dockerfile, nginx.conf (TD-21)
 ├── migrations/                   # 001 DDL BT1 · 002 app_user
 ├── seeds/                        # 001 mẫu nhỏ · 002 lịch sử mô phỏng (tự sinh) · 003 tài khoản mẫu
@@ -123,7 +131,8 @@ Kiểm tra nhanh bằng API: `curl -s localhost:3000/db-check` → `{"status":"O
 │       ├── src/components/       # DataState (3 trạng thái), Layout, useAsync, format
 │       ├── src/pages/            # SurveyPage (M1), ResponsesPage (M2), DashboardPage (M3), LoginPage
 │       └── vite.config.js        # proxy /api -> backend (TD-15)
-├── tests/                        # Jest + Supertest, repository giả trong tests/fakes/
+├── tests/                        # Jest + Supertest; test-cases/ = TC-01..TC-12; helpers/test-db.js; fakes/
+├── .github/workflows/ci.yml      # CI: npm ci + npm test với PostgreSQL 16
 ├── .env.example                  # Đủ mọi biến, giá trị mẫu (.env thật nằm trong .gitignore)
 └── README.md
 ```

@@ -227,8 +227,31 @@ Các endpoint dưới đây cần header `Authorization: Bearer <token>`; thiế
 
 Mặc định `to` = tháng hiện tại, `from` = tháng 01 cùng năm; tối đa 24 tháng. Response `{ "center_id", "from", "to", "months": [ { "month": "2026-09", "center": { ...chỉ số... }, "system": { ...chỉ số toàn hệ thống, làm mốc so sánh... } } ] }` – đủ mọi tháng trong khoảng, tháng không có phản hồi có chỉ số `null`.
 
-Công thức (BR-L8-03): `csat_avg` = trung bình CSAT (2 chữ số); `csat_rate` = % phản hồi CSAT 4–5 (1 chữ số); `nps` = % NPS 9–10 trừ % NPS 0–6 trên số phản hồi CÓ chấm NPS, làm tròn số nguyên. Nhân viên gọi → `403 FORBIDDEN`; tháng sai định dạng → `400` kèm `field`.
+Công thức (BR-L8-03): `csat_avg` = trung bình CSAT (2 chữ số); `csat_rate` = % phản hồi CSAT 4–5 (1 chữ số); `nps` = % NPS 9–10 trừ % NPS 0–6 trên số phản hồi CÓ chấm NPS, làm tròn số nguyên, nửa đơn vị làm tròn ra xa số 0 (+12,5 → 13; −12,5 → −13 – BUG-008). Nhân viên gọi → `403 FORBIDDEN`; tháng sai định dạng → `400` kèm `field`.
 
-## 6. Tự kiểm
+## 6. Bổ sung ở buổi 14 (BT3): phân quyền cho mọi endpoint nội bộ (BUG-006)
+
+Công khai (không cần đăng nhập): API2, API3 – khách mở link có mã lời mời 64 ký tự; `POST /api/auth/login`; `/health`, `/db-check`.
+
+Mọi endpoint còn lại cần header `Authorization: Bearer <token>`, thiếu/sai/hết hạn → `401 UNAUTHORIZED`:
+
+| Endpoint | Trước buổi 14 | Từ buổi 14 |
+|---|---|---|
+| API1 `POST /api/survey-invitations` | Công khai | Cần đăng nhập (hệ thống quản lý phiếu gọi bằng tài khoản nội bộ) |
+| CRUD `/api/customers`, `/api/technicians` (mục 4) | Công khai | Cần đăng nhập |
+| API4, hai API báo cáo (mục 5) | Cần đăng nhập | Không đổi |
+
+Ví dụ (Git Bash): lấy token rồi gọi API1
+
+```bash
+TOKEN=$(curl -s -X POST localhost:3000/api/auth/login -H "Content-Type: application/json" \
+  -d '{"username":"nv.q10","password":"Matkhau@123"}' | node -pe "JSON.parse(require('fs').readFileSync(0)).token")
+curl -s -X POST localhost:3000/api/survey-invitations -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" -d '{"ticket_code":"BH-000106/2026"}'
+```
+
+Ràng buộc `comment` (API3): tối đa 500 **ký tự** – đếm theo ký tự như `VARCHAR(500)` của PostgreSQL, emoji 👍 tính 1 ký tự (BUG-007).
+
+## 7. Tự kiểm
 
 Mọi endpoint đều truy vết được về User Story trong bảng truy vết mục 6 của SRS: API1 → US1, API2 → US2, API3 → US2/US3/US4, API4 → US5.

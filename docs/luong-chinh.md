@@ -16,7 +16,7 @@ Làm theo sáu bước tích hợp của Buổi 10. Luồng chính lấy lại t
 
 | Bước | Cách chạy riêng | Kết quả |
 |---|---|---|
-| 1 | `curl -X POST /api/survey-invitations` | 201; gọi lần 2 → 409 `INVITATION_EXISTS` |
+| 1 | Đăng nhập lấy token, `curl -X POST /api/survey-invitations -H "Authorization: Bearer $TOKEN"` (từ buổi 14 API1 cần đăng nhập – BUG-006) | 201; gọi lần 2 → 409 `INVITATION_EXISTS`; không có token → 401 |
 | 2–3 | `curl /api/surveys/{token}`, `curl -X POST …/responses`; kiểm thử `tests/api.survey.test.js` | 200 / 201 / 409 / 410 / 400 đúng hợp đồng |
 | 4 | Đăng nhập bằng curl lấy token, gọi `/api/survey-responses`; kiểm thử `tests/response.service.test.js`, `tests/auth.service.test.js` | 200; khác trung tâm → 403; thiếu token → 401 |
 | 5 | Gọi `/api/reports/technicians`, `/api/reports/monthly-trend`; kiểm thử `tests/report.service.test.js` | Số khớp công thức BR-L8-03 tính tay |

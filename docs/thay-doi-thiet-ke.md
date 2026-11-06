@@ -142,3 +142,37 @@ Mỗi điểm ghi đủ bốn dòng: phản hồi – quyết định – lý do
 - Lý do : Sơ đồ BT1 là sơ đồ dự kiến; báo cáo BT2 mục 2 phải là thành phần thực tế và nơi từng lớp nằm.
 - Ảnh hưởng : Thêm docs/architecture-thuc-te.drawio + docs/export/architecture-thuc-te.png (khác BT1: thêm frontend thật, middlewares, AuthService, ResponseService, UserRepository, bảng app_user, logger, Docker); docs/bug-log.md với 4 lỗi đủ 7 dòng.
 
+
+## Sau phản hồi Bài tập 2 (buổi 14, ngày 06/11/2026)
+
+Nhận xét của giảng viên cho BT2 – điểm mạnh: lời mời token 64 ký tự hạn 7 ngày, một lời mời một phản hồi, che SĐT, nhãn “Cần chăm sóc”, báo cáo CSAT/NPS có mốc tháng trước và toàn hệ thống, CRUD customer/technician, JWT, 65 kiểm thử, migration/seed chạy lại không nhân đôi, logger JSON, Docker Compose; bảng 4.2 đạt đủ mục chung và mục theo track. Cần khắc phục: hai mục dưới đây (TD-23, TD-24). Mỗi nhận xét một quyết định có ghi lại.
+
+### TD-23 Tag v0.2 chưa có trên GitHub
+- Phản hồi của GV : “Repo trên GitHub chưa có tag v0.2 (PDF ghi có) – tag phải được đẩy lên bằng git push origin v0.2.”
+- Quyết định : SỬA
+- Lý do : Kiểm lại: repo trên máy em cũng không có tag (`git tag` trả rỗng) – lệnh tạo và đẩy tag chưa từng được chạy, trong khi PDF ghi “Tag nộp bài: v0.2”; người chấm không kiểm được điều PDF ghi. Nguyên nhân gốc: thiếu bước kiểm tra trên GitHub sau khi nộp.
+- Ảnh hưởng : Tạo tag có chú thích `v0.2` trỏ vào `af7e9f6` – commit cuối cùng trên `main` trước hạn nộp BT2 (30/10/2026), không trỏ vào commit mới của buổi 14 để giữ đúng trạng thái đã nộp; `git push origin v0.2`; đã đẩy ngày 06/11/2026 và kiểm trang Tags ở cửa sổ ẩn danh (ảnh `docs/screenshots/tag-v0.2.png`). Từ BT3: tạo `v1.0` xong là `git push origin v1.0` ngay, rồi clone theo tag từ thư mục trống (`git clone --branch v1.0 …`) trước khi nộp – thêm vào checklist nộp bài.
+
+### TD-24 Một số commit có thông điệp chung chung
+- Phản hồi của GV : “Một số commit thông điệp còn chung chung.”
+- Quyết định : SỬA cách làm từ buổi 14; GIỮ NGUYÊN lịch sử đã đẩy lên
+- Lý do : Các commit chung chung: `af7e9f6`, `3498b47`, `3903df2`, `8ea0480`, `a347c1b`, `2027d08`, `c362daf` “Update README.md” (sửa thẳng trên giao diện web GitHub, tên tự sinh), `6019bdb` “Merge branch 'main' …”, `ad6c04d` “docs: add README skeleton”. Không viết lại lịch sử (rebase/force push) vì `main` đã công khai và Bug Log BT2 đang dẫn link tới các commit cũ – viết lại sẽ làm các link đó chết (mục C4 BT3).
+- Ảnh hưởng : Quy ước ghi trong README mục 4: `<loại>(<phạm vi>): <việc cụ thể>` (loại: feat, fix, test, docs, chore, ci), luôn có phạm vi; mỗi commit một việc; sửa bug là `fix(<phạm vi>): … (BUG-xxx)` chỉ chứa tệp của bug đó; không sửa tệp trên giao diện web GitHub, không `git add .`. Các commit của buổi 14 làm theo quy ước này.
+
+### TD-25 Mọi endpoint nội bộ cần đăng nhập (BUG-006)
+- Phản hồi của GV : Không có – tự phát hiện bằng TC-11 (test bảo mật OWASP A01 của Test Report buổi 14).
+- Quyết định : SỬA (thay đổi hợp đồng API1 và CRUD)
+- Lý do : CRUD và API1 viết ở Sprint 1 khi chưa có đăng nhập, không được rà lại sau TD-14; ai gọi được API đều ngừng được khách hàng và tự tạo lời mời rồi gửi phản hồi giả – lỗ hổng Critical.
+- Ảnh hưởng : `routes/index.js` gắn `auth` cho CRUD `customers`, `technicians` và API1; thiếu `authService` thì từ chối (fail closed). API2, API3, đăng nhập vẫn công khai. `docs/api-contract.md` mục 6, README mục 5, `docs/luong-chinh.md` hướng dẫn lấy token trước khi gọi API1. Frontend không đổi (không gọi các endpoint này).
+
+### TD-26 Kiểm thử tích hợp với PostgreSQL thật và CI GitHub Actions
+- Phản hồi của GV : Không có – yêu cầu Buổi 13–14 (kim tự tháp có tầng integration; CI khuyến khích). README BT2 mục 6 đã ghi đây là phần chuyển sang BT3.
+- Quyết định : SỬA
+- Lý do : 65 test của BT2 đều dùng repository giả nên không bắt được lỗi ở ràng buộc CSDL (UNIQUE khi gửi trùng cùng lúc) và lỗi chạy lại seed.
+- Ảnh hưởng : Thêm `tests/helpers/test-db.js` (CSDL riêng `smartcrm_test`, biến `DB_NAME_TEST` bắt buộc đuôi `_test`, reset trước mỗi test) và `tests/test-cases/` (TC-01 → TC-12). `npm test` từ nay cần PostgreSQL đang chạy (như khi chạy hệ thống). Thêm `.github/workflows/ci.yml` (Node 20 + `postgres:16-alpine`, `npm ci` + `npm test`). Thêm `docs/test-plan.md`, `docs/test-report.md`, `docs/screenshots/`.
+
+### TD-27 Làm rõ hợp đồng: đếm ký tự của nhận xét, quy tắc làm tròn NPS (BUG-007, BUG-008)
+- Phản hồi của GV : Không có – phát hiện bằng TC-07, TC-06.
+- Quyết định : SỬA
+- Lý do : Hợp đồng ghi “≤ 500 ký tự” và “làm tròn số nguyên” nhưng không nói đếm thế nào, làm tròn thế nào; frontend, backend và CSDL hiểu khác nhau.
+- Ảnh hưởng : Nhận xét đếm theo ký tự (code point) như `VARCHAR(500)`; NPS làm tròn nửa đơn vị ra xa số 0. Ghi vào `docs/api-contract.md` mục 5–6.
