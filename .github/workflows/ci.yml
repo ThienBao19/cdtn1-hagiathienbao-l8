@@ -1,0 +1,35 @@
+# CI – chạy toàn bộ kiểm thử (unit + API + integration với PostgreSQL thật) mỗi lần push / pull request.
+# Máy sạch của GitHub: cài đúng theo src/backend/package-lock.json rồi chạy MỘT lệnh npm test (Buổi 13, mục 04).
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: test        # mật khẩu thử, chỉ tồn tại trong máy CI – không phải secret thật
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: test
+      DB_NAME_TEST: smartcrm_test       # integration test chỉ dùng CSDL *_test (tests/helpers/test-db.js)
+    defaults:
+      run:
+        working-directory: src/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: src/backend/package-lock.json
+      - run: npm ci
+      - run: npm test
