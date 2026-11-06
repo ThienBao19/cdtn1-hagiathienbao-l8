@@ -1,10 +1,16 @@
 // Kiểm thử qua HTTP (Supertest) với repository giả: dữ liệu sai bị TỪ CHỐI rõ ràng, không sập (C7).
 const request = require('supertest');
+const jwt = require('jsonwebtoken');
 const { createApp } = require('../src/backend/app');
 const { createFakeDb } = require('./fakes/in-memory-repositories');
 const { createSurveyService } = require('../src/backend/services/survey.service');
 const { createInvitationService } = require('../src/backend/services/invitation.service');
 const { createCustomerService } = require('../src/backend/services/customer.service');
+const { createAuthService } = require('../src/backend/services/auth.service');
+
+// CRUD và API1 cần đăng nhập (BUG-006): ký sẵn một JWT Nhân viên trung tâm 1 bằng khoá thử.
+const SECRET = 'khoa-ky-jwt-chi-dung-cho-test-123';
+const STAFF = `Bearer ${jwt.sign({ sub: 1, username: 'nv.q10', role: 'NHAN_VIEN', center_id: 1 }, SECRET)}`;
 
 function buildApp() {
   const fake = createFakeDb();
@@ -15,6 +21,7 @@ function buildApp() {
     invitationService: createInvitationService(fake),
     customerService: createCustomerService(fake),
     technicianService: {},
+    authService: createAuthService({ userRepository: {}, secret: SECRET }),
   };
   return createApp({ services, db: { query: async () => ({ rows: [{}] }) } });
 }
@@ -33,19 +40,19 @@ describe('API – dữ liệu sai trả 400 kèm tên trường', () => {
   });
 
   test('[Dữ liệu sai] POST /api/customers số điện thoại sai -> 400, field = phone', async () => {
-    const res = await request(buildApp()).post('/api/customers').send({ full_name: 'A', phone: '12345' });
+    const res = await request(buildApp()).post('/api/customers').set('Authorization', STAFF).send({ full_name: 'A', phone: '12345' });
     expect(res.status).toBe(400);
     expect(res.body.error.field).toBe('phone');
   });
 
   test('[Dữ liệu sai] POST /api/survey-invitations sai định dạng mã phiếu -> 400, field = ticket_code', async () => {
-    const res = await request(buildApp()).post('/api/survey-invitations').send({ ticket_code: 'BH-123' });
+    const res = await request(buildApp()).post('/api/survey-invitations').set('Authorization', STAFF).send({ ticket_code: 'BH-123' });
     expect(res.status).toBe(400);
     expect(res.body.error.field).toBe('ticket_code');
   });
 
   test('[Luồng đúng] API1 phiếu đã có lời mời -> 409 INVITATION_EXISTS', async () => {
-    const res = await request(buildApp()).post('/api/survey-invitations').send({ ticket_code: 'BH-000123/2026' });
+    const res = await request(buildApp()).post('/api/survey-invitations').set('Authorization', STAFF).send({ ticket_code: 'BH-000123/2026' });
     expect(res.status).toBe(409);
     expect(res.body.error.code).toBe('INVITATION_EXISTS');
   });
