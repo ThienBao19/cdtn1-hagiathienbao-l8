@@ -1,5 +1,7 @@
-# Dựng toàn bộ hệ thống bằng 2 lệnh:  cp .env.example .env   rồi   docker compose up --build
-# Mở http://localhost:8080 (giao diện) – API ở http://localhost:3000
+# Dựng toàn bộ hệ thống bằng 2 lệnh (docs/deployment-guide.md):
+#   cp .env.example .env
+#   docker compose up -d --build
+# Giao diện http://localhost:8080 · API http://localhost:3000/health · CSDL KHÔNG mở cổng ra máy (chỉ trong mạng nội bộ)
 services:
   db:
     image: postgres:16-alpine
@@ -30,6 +32,7 @@ services:
       INVITATION_VALID_DAYS: ${INVITATION_VALID_DAYS:-7}
       FRONTEND_URL: http://localhost:${WEB_PORT:-8080}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      DB_NAME_TEST: ${DB_NAME_TEST:-smartcrm_test}   # CSDL riêng cho integration test khi chạy npm test trong container
     ports:
       - "${API_PORT:-3000}:3000"
     depends_on:
@@ -45,6 +48,10 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 5s
+      retries: 10
 
 volumes:
   dbdata:
