@@ -176,3 +176,29 @@ Nhận xét của giảng viên cho BT2 – điểm mạnh: lời mời token 64
 - Quyết định : SỬA
 - Lý do : Hợp đồng ghi “≤ 500 ký tự” và “làm tròn số nguyên” nhưng không nói đếm thế nào, làm tròn thế nào; frontend, backend và CSDL hiểu khác nhau.
 - Ảnh hưởng : Nhận xét đếm theo ký tự (code point) như `VARCHAR(500)`; NPS làm tròn nửa đơn vị ra xa số 0. Ghi vào `docs/api-contract.md` mục 5–6.
+
+## Bài tập 3 – đóng gói, bảo mật, tài liệu (buổi 15–16, ngày 13/11/2026)
+
+### TD-28 Hoàn thiện gói Docker để dựng lại bằng hai lệnh và chạy test trong container
+- Phản hồi của GV : Không có – yêu cầu thành phần 4 BT3 và Buổi 15 (healthcheck, dữ liệu mẫu, phép thử máy trắng).
+- Quyết định : SỬA
+- Lý do : Người chấm chỉ có Docker và Git, làm đúng `cp .env.example .env` + `docker compose up -d --build`, rồi kiểm `docker compose ps`, `/health`, `docker compose exec api npm test`.
+- Ảnh hưởng : `/health` kiểm thêm CSDL (`{"status":"ok","db":"up"}`, CSDL không trả lời → 503) để trạng thái `healthy` có ý nghĩa; image `api` cài cả devDependencies và chép `tests/` (chạy được 83 test trong container, tích hợp với CSDL `smartcrm_test` trong dịch vụ `db`); dịch vụ `web` có healthcheck; thêm `DB_NAME_TEST`. GIỮ cách khởi tạo CSDL bằng `migrate` + `seed` khi `api` khởi động thay cho `db/init/` của Postgres: một nguồn migration duy nhất cho cả chạy có và không có Docker, chạy lại không lỗi, không nhân đôi (C8), và không phụ thuộc volume còn trống. CSDL không mở cổng ra máy chủ.
+
+### TD-29 Kỹ thuật viên chỉ do Quản lý của chính trung tâm thay đổi (BUG-009)
+- Phản hồi của GV : Không có – phát hiện khi điền checklist bảo mật mục 3.
+- Quyết định : SỬA (đổi hợp đồng 3 endpoint `POST/PUT/DELETE /api/technicians`)
+- Lý do : Kỹ thuật viên thuộc một trung tâm; để mọi tài khoản sửa được là lỗ hổng A01 và trái tinh thần QT-14.
+- Ảnh hưởng : Nhân viên hoặc Quản lý trung tâm khác → `403 FORBIDDEN`; không chuyển kỹ thuật viên sang trung tâm khác. GIỮ NGUYÊN quyền với khách hàng: khách hàng dùng chung giữa các trung tâm (một khách mang máy tới nhiều trung tâm), mọi tài khoản đã đăng nhập được tạo/sửa, số điện thoại luôn che.
+
+### TD-30 Nâng phụ thuộc có lỗ hổng trong phạm vi phiên bản hiện tại
+- Phản hồi của GV : Không có – checklist bảo mật mục 7 (`npm audit`).
+- Quyết định : SỬA một phần
+- Lý do : `npm audit fix` vá `body-parser`, `qs` (backend) và `@remix-run/router` (frontend) mà không đổi phiên bản chính; 83 test và build frontend vẫn PASS.
+- Ảnh hưởng : Cập nhật hai `package-lock.json`. GIỮ `react-router-dom` 6 (còn 2 cảnh báo moderate, vá chỉ có ở bản 7 – đổi phiên bản chính) – kế hoạch nâng sau khi nộp BT3, ghi trong checklist mục 7.
+
+### TD-31 Tài liệu bàn giao tiếng Anh
+- Phản hồi của GV : Không có – thành phần 5, 6 BT3.
+- Quyết định : SỬA
+- Lý do : Đề BT3 yêu cầu Deployment Guide và API docs bằng tiếng Anh, mô tả đúng hệ thống thật (C9).
+- Ảnh hưởng : Thêm `docs/deployment-guide.md` (5 mục bắt buộc + Troubleshooting + Monitoring & alerts), `docs/api-docs.md` (20 endpoint, mỗi endpoint 7 mục, ví dụ chép từ lần chạy thật), `docs/checklist-bao-mat.md`. `docs/api-contract.md` (tiếng Việt) giữ làm lịch sử thiết kế từ BT1; tài liệu API chính từ BT3 là `api-docs.md`.

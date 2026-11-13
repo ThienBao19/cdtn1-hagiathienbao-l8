@@ -18,12 +18,21 @@ Khi một phiếu bảo hành chuyển sang trạng thái Đã đóng, hệ th�
 - PostgreSQL 16 trở lên (máy em dùng PostgreSQL 18); user có quyền tạo database (mặc định `postgres`)
 - Biến môi trường: xem `.env.example` (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `APP_PORT`, `FRONTEND_URL`, `INVITATION_VALID_DAYS`, `SECRET_KEY`, `JWT_EXPIRES_IN`). `SECRET_KEY` bắt buộc, tối thiểu 16 ký tự.
 - Trình duyệt Chrome/Edge bản mới; cổng 3000 (API) và 5173 (giao diện) còn trống
-- Kiểm thử dùng repository giả nên **không cần PostgreSQL để chạy `npm test`**
-- Docker Desktop (Compose v2) – chỉ cần nếu chạy theo cách 2 ở mục 3
+- `npm test` cần PostgreSQL đang chạy cho 2 test integration (CSDL riêng `smartcrm_test`); các test khác dùng repository giả
+- **Cách chính từ BT3:** chỉ cần Docker Desktop (Docker 24+, Compose v2) và Git – xem mục 3 và [docs/deployment-guide.md](docs/deployment-guide.md)
 
-## 3. Cài đặt và chạy (mỗi bước một lệnh, chạy từ thư mục gốc repo)
+## 3. Cài đặt và chạy
 
-**Cách 1 – chạy trực tiếp (cách chính)**
+**Cách chính (BT3) – Docker Compose, hai lệnh, không cần cài Node/PostgreSQL.** Hướng dẫn đầy đủ (tiếng Anh): [docs/deployment-guide.md](docs/deployment-guide.md).
+
+```bash
+cp .env.example .env            # PowerShell: copy .env.example .env
+docker compose up -d --build
+```
+
+Giao diện http://localhost:8080 · API http://localhost:3000/health → `{"status":"ok","db":"up"}`. Container `api` tự chạy migrate + seed trước khi mở API. Kiểm: `docker compose ps` (3 dịch vụ `healthy`), `docker compose exec api npm test`. Dừng: `docker compose down`; xoá cả dữ liệu: `docker compose down -v`.
+
+**Cách 2 – chạy trực tiếp khi phát triển (cần Node.js 20 + PostgreSQL 16+)**
 
 *Backend – terminal 1*
 
@@ -39,11 +48,6 @@ Khi một phiếu bảo hành chuyển sang trạng thái Đã đóng, hệ th�
 7. Vào thư mục frontend: `cd src/frontend`
 8. Cài thư viện: `npm ci`
 9. Khởi động giao diện: `npm run dev` → mở http://localhost:5173
-
-**Cách 2 – Docker Compose (tuỳ chọn, 2 lệnh, không cần cài Node/PostgreSQL)**
-
-1. `cp .env.example .env` (Windows CMD: `copy .env.example .env`)
-2. `docker compose up --build` → giao diện http://localhost:8080, API http://localhost:3000 (container `api` tự chạy migrate + seed trước khi mở API). Dừng: Ctrl + C rồi `docker compose down`; xoá cả dữ liệu: `docker compose down -v`.
 
 Dữ liệu mẫu: seed 001 (dữ liệu nhỏ có token cố định để thử API) + seed 002 (lịch sử 01–10/2026 **mô phỏng** có seed 42 theo quy mô case study: 24 kỹ thuật viên, ~1.200 khách, 2.409 phiếu, 2.230 lời mời, 1.476 phản hồi – xem TD-16) + seed 003 (tài khoản mẫu). Chạy lại bước 4 và 5 bao nhiêu lần cũng không lỗi và không nhân đôi dữ liệu. Muốn dữ liệu về trạng thái ban đầu (ví dụ token `aaaa…` đã bị dùng khi thử): `npm run db:reset`.
 
@@ -62,7 +66,7 @@ cd src/backend
 npm test
 ```
 
-77 kiểm thử trong `tests/` (Jest + Supertest), mỗi tên ghi rõ loại ở đầu: **[Luồng đúng]**, **[Giá trị biên]**, **[Dữ liệu sai]**, **[Bảo mật]**, **[Tái lập]**. Từ buổi 14, `npm test` cần **PostgreSQL đang chạy** (thông tin kết nối lấy từ `.env`): hai test integration TC-09, TC-12 dùng CSDL riêng `smartcrm_test` (đổi bằng biến `DB_NAME_TEST`, bắt buộc đuôi `_test`), tự tạo và tự xoá sạch trước mỗi test – không chạm vào CSDL `smartcrm`. Các test còn lại dùng repository giả (`tests/fakes/`) và đồng hồ cố định.
+83 kiểm thử trong `tests/` (Jest + Supertest), mỗi tên ghi rõ loại ở đầu: **[Luồng đúng]**, **[Giá trị biên]**, **[Dữ liệu sai]**, **[Bảo mật]**, **[Tái lập]**. Từ buổi 14, `npm test` cần **PostgreSQL đang chạy** (thông tin kết nối lấy từ `.env`): hai test integration TC-09, TC-12 dùng CSDL riêng `smartcrm_test` (đổi bằng biến `DB_NAME_TEST`, bắt buộc đuôi `_test`), tự tạo và tự xoá sạch trước mỗi test – không chạm vào CSDL `smartcrm`. Các test còn lại dùng repository giả (`tests/fakes/`) và đồng hồ cố định.
 
 Chạy lại MỘT test case của Test Report: `npx jest -t "TC-05 " --verbose` (có dấu cách sau mã). Kế hoạch và kết quả: [docs/test-plan.md](docs/test-plan.md), [docs/test-report.md](docs/test-report.md), ảnh `docs/screenshots/`. CI: `.github/workflows/ci.yml` chạy `npm ci` + `npm test` mỗi lần push (lần chạy đầu xanh – `docs/screenshots/ci-actions.png`).
 
@@ -79,6 +83,8 @@ Chạy lại MỘT test case của Test Report: `npx jest -t "TC-05 " --verbose`
 | `customer.service.test.js`, `api.validation.test.js` | CRUD khách hàng, số điện thoại trùng, body sai JSON → 400 |
 | `logging.test.js` | Log JSON có requestId, che mật khẩu/số điện thoại; CSDL tắt → 503 kèm mã tra cứu, ghi ERROR đúng một lần |
 | `db-pool.test.js` | Test hồi quy BUG-001 ([docs/bug-log.md](docs/bug-log.md)): BIGINT đọc từ CSDL là số |
+| `access-control.test.js` | Hồi quy BUG-009: chỉ Quản lý của chính trung tâm được tạo, sửa, ngừng kỹ thuật viên |
+| `health.test.js` | `/health`: CSDL lên → 200 `db: up`; CSDL tắt → 503 `db: down` |
 
 Quy ước commit (TD-24): `<loại>(<phạm vi>): <việc cụ thể>` – loại `feat`, `fix`, `test`, `docs`, `chore`, `ci`; mỗi commit một việc; sửa bug: `fix(<phạm vi>): … (BUG-xxx)` chỉ chứa tệp của bug đó; không sửa tệp trực tiếp trên giao diện web GitHub.
 
@@ -98,20 +104,19 @@ Log: backend ghi mỗi sự kiện một dòng JSON ra terminal (mức theo `LOG
 
 Kiểm tra nhanh bằng API: `curl -s localhost:3000/db-check` → `{"status":"OK",...}`. Danh sách endpoint: [docs/api-contract.md](docs/api-contract.md). Token mẫu trong seed 001: `aaaa…`, `eeee…` còn hạn · `bbbb…` hết hạn · `cccc…`, `dddd…` đã trả lời (mỗi token là 64 lần lặp một chữ cái).
 
-## 6. Trạng thái hiện tại (buổi 14 – kiểm thử, chuẩn bị Bài tập 3)
+## 6. Trạng thái hiện tại (buổi 16 – nộp Bài tập 3, tag `v1.0`)
 
-- [x] Sprint 1: migration + seed chạy lại không nhân đôi; CRUD `customer`, `technician`; API1–API3 (QT-10, BR-L8-01, BR-L8-02, BR-L8-05)
-- [x] Sprint 2: đăng nhập JWT; API4 (QT-14, QT-15); báo cáo CSAT/NPS theo KTV và theo tháng (US6, US7)
-- [x] Frontend React M1, M2, M3 + Đăng nhập, đủ ba trạng thái; luồng chính end-to-end ([docs/luong-chinh.md](docs/luong-chinh.md))
-- [x] Logger JSON + mã tra cứu (TD-20); Docker Compose 3 dịch vụ (TD-21); sơ đồ kiến trúc thực tế
-- [x] BT2 nộp tại tag `v0.2`; phản hồi BT2 đã ghi quyết định TD-23, TD-24
-- [x] Buổi 14: Test Plan, Test Report 12 test case (7 unit · 2 integration · 3 API) chạy thật có ảnh; Bug Log 8 mục, BUG-005 → BUG-008 mỗi bug một commit `fix`; 77 kiểm thử PASS bằng `npm test`; CI GitHub Actions
-- [ ] Còn lại cho BT3 (buổi 15–16): Deployment Guide tiếng Anh, checklist bảo mật 7 mục, API docs tiếng Anh, phép thử máy trắng bằng Docker, tag `v1.0`
+- [x] Sprint 1–2: CRUD `customer`, `technician`; API1–API4; đăng nhập JWT; báo cáo CSAT/NPS (US6, US7); frontend M1–M3 + Đăng nhập
+- [x] BT2 tại tag `v0.2`; phản hồi BT2 → TD-23, TD-24
+- [x] BT3 – TP1 Test Plan, TP2 Test Report 12 TC chạy thật, TP3 Bug Log 9 mục (BUG-005 → BUG-009 có commit `fix` riêng; BUG-006, BUG-009 Critical)
+- [x] BT3 – TP4 Docker Compose 3 dịch vụ có healthcheck, dựng bằng 2 lệnh; TP5 [Deployment Guide](docs/deployment-guide.md) + [checklist bảo mật](docs/checklist-bao-mat.md); TP6 [API docs](docs/api-docs.md)
+- [x] 83 kiểm thử PASS bằng `npm test` (cả trong container); CI GitHub Actions
+- [ ] Chưa làm: gửi lời mời tự động khi phiếu đổi trạng thái (đang mô phỏng bằng API1); nâng React Router 7 (checklist mục 7); deploy thử lên nền tảng công khai
 
 ## 7. Cấu trúc thư mục (ánh xạ với sơ đồ kiến trúc BT1)
 
 ```
-├── docs/                         # SRS, API contract, luồng chính, kiến trúc thực tế, test-plan, test-report, bug-log, thay đổi thiết kế, khai báo AI, evidence/, screenshots/
+├── docs/                         # SRS, API contract, api-docs (EN), deployment-guide (EN), checklist-bao-mat, test-plan, test-report, bug-log, thay đổi thiết kế, khai báo AI, evidence/, screenshots/
 ├── docker/, docker-compose.yml   # Đóng gói: api.Dockerfile, web.Dockerfile, nginx.conf (TD-21)
 ├── migrations/                   # 001 DDL BT1 · 002 app_user
 ├── seeds/                        # 001 mẫu nhỏ · 002 lịch sử mô phỏng (tự sinh) · 003 tài khoản mẫu
@@ -161,3 +166,8 @@ Mở file `.drawio` bằng https://app.diagrams.net (File → Open from → Devi
 
 - Báo cáo: `BT2_2374802010032_HaGiaThienBao.pdf` (nộp trên VLU E-learning, không nằm trong repo).
 - Mã nguồn chấm tại tag `v0.2`: `git clone --branch v0.2 https://github.com/ThienBao19/cdtn1-hagiathienbao-l8.git thu-nghiem` rồi làm theo mục 3.
+
+## 11. Nộp Bài tập 3
+
+- Báo cáo: `BT3_2374802010032_HaGiaThienBao.pdf` (nộp trên VLU E-learning, không nằm trong repo).
+- Mã nguồn chấm tại tag `v1.0`: `git clone --branch v1.0 https://github.com/ThienBao19/cdtn1-hagiathienbao-l8.git` rồi làm theo [docs/deployment-guide.md](docs/deployment-guide.md).

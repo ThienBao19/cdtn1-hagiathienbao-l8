@@ -3,10 +3,11 @@
 Mỗi lỗi ghi đủ 7 dòng theo mẫu Buổi 11/13, gỡ theo bốn bước: tái lập → khoanh vùng → sửa nguyên nhân → xác nhận. Phân loại theo hai câu hỏi của Buổi 13: (1) hệ thống không dùng được, dữ liệu sai hoặc lộ dữ liệu → Critical; (2) chức năng quan trọng sai nhưng có cách làm khác → Major; còn lại Minor.
 
 - **BUG-001 → BUG-004** (Sprint 1–2) được phát hiện và sửa TRƯỚC khi commit lần đầu tính năng tương ứng, nên link là commit đầu tiên chứa bản sửa – không có commit `fix` riêng.
-- **BUG-005 → BUG-008** mỗi bug một commit `fix(...)` riêng, chỉ chứa đúng các tệp sửa bug đó. BUG-006 → BUG-008 do Test Report buổi 14 phát hiện (TC-11, TC-07, TC-06).
+- **BUG-005 → BUG-009** mỗi bug một commit `fix(...)` riêng, chỉ chứa đúng các tệp sửa bug đó. BUG-006 → BUG-008 do Test Report buổi 14 phát hiện (TC-11, TC-07, TC-06); BUG-009 do điền checklist bảo mật BT3 phát hiện.
 
 | Bug | Mức | Phát hiện bởi | Commit sửa |
 |---|---|---|---|
+| BUG-009 | **Critical** | Checklist bảo mật mục 3 (BT3) | [46c65c6](https://github.com/ThienBao19/cdtn1-hagiathienbao-l8/commit/46c65c66ba12fb221da16ab586f4b7b2092ce420) |
 | BUG-006 | **Critical** | TC-11 | [b469d40](https://github.com/ThienBao19/cdtn1-hagiathienbao-l8/commit/b469d40d21d551403f9993b1e6e9bf8847f2711f) |
 | BUG-007 | Minor | TC-07 | [128ca01](https://github.com/ThienBao19/cdtn1-hagiathienbao-l8/commit/128ca01ca4f98f2ba82490b610cadb748ec4cd16) |
 | BUG-008 | Minor | TC-06 | [ff3b3f0](https://github.com/ThienBao19/cdtn1-hagiathienbao-l8/commit/ff3b3f0c3a96f6103b2a1a68d1f9c7795bf2fb4b) |
@@ -108,3 +109,15 @@ Mỗi lỗi ghi đủ 7 dòng theo mẫu Buổi 11/13, gỡ theo bốn bước: 
 | 5. Nguyên nhân | `computeMetrics` dùng `Math.round`, hàm làm tròn nửa đơn vị về phía +∞, không phải “làm tròn số nguyên” thông thường (ra xa số 0) như hợp đồng mô tả |
 | 6. Cách sửa | `services/report.service.js`: hàm `roundHalfAwayFromZero(x) = Math.sign(x) * Math.round(Math.abs(x))`, cộng `0` để không trả `-0`; ghi rõ quy tắc làm tròn trong `docs/api-contract.md` mục 5 |
 | 7. Commit và xác nhận | [ff3b3f0](https://github.com/ThienBao19/cdtn1-hagiathienbao-l8/commit/ff3b3f0c3a96f6103b2a1a68d1f9c7795bf2fb4b) – `fix(report): lam tron NPS doi xung (BUG-008)` · chạy lại TC-06 → `[13, -13]` PASS; `npm test` sau commit: chỉ còn TC-11 (BUG-006) FAIL (`BUG-008-fixed.png`) |
+
+## BUG-009 · Critical – Nhân viên trung tâm này ngừng được kỹ thuật viên của trung tâm khác
+
+| Dòng | Nội dung |
+|---|---|
+| 1. Mã và mức độ | BUG-009 · **Critical** – lỗ hổng kiểm soát truy cập (OWASP A01, vi phạm tinh thần QT-14) làm SAI dữ liệu của trung tâm khác: kỹ thuật viên bị ngừng thì biến khỏi danh sách và báo cáo đang làm việc của trung tâm đó |
+| 2. Phát hiện bởi | Điền checklist bảo mật BT3 mục 3 “Kiểm soát truy cập theo chủ sở hữu” bằng cách chạy thử (13/11/2026) |
+| 3. Triệu chứng | Đăng nhập `nv.q10` (Nhân viên, trung tâm Quận 10) gọi `DELETE /api/technicians/3` – kỹ thuật viên Trần Thị Mai của trung tâm Tân Bình → `200`, `is_active: false`. `POST`, `PUT` sang trung tâm khác cũng thành công |
+| 4. Cách tái lập | `npm start`; lấy token `nv.q10`; `curl -X DELETE localhost:3000/api/technicians/3 -H "Authorization: Bearer $TOKEN"` → `HTTP 200` (5/5 lần) – ảnh `docs/screenshots/BUG-009-tai-lap.png` |
+| 5. Nguyên nhân | BUG-006 chỉ thêm bước XÁC THỰC (đã đăng nhập chưa) cho CRUD; `TechnicianService` không nhận người gọi nên không có bước PHÂN QUYỀN (ai được sửa dữ liệu của trung tâm nào). Kỹ thuật viên có chủ sở hữu là trung tâm (`center_id`) nhưng quy tắc này không được hiện thực |
+| 6. Cách sửa | `services/technician.service.js`: `create`, `update`, `deactivate` nhận `user`; hàm `requireManagerOf(user, centerId)` chỉ cho `QUAN_LY` của đúng trung tâm, không cho chuyển kỹ thuật viên sang trung tâm khác → `403 FORBIDDEN`; `controllers/technician.controller.js` truyền `req.user`. Xem vẫn mở cho mọi người đã đăng nhập. Test hồi quy `tests/access-control.test.js` (4 test) |
+| 7. Commit và xác nhận | [46c65c6](https://github.com/ThienBao19/cdtn1-hagiathienbao-l8/commit/46c65c66ba12fb221da16ab586f4b7b2092ce420) – `fix(auth): chi Quan ly cua trung tam duoc sua ky thuat vien (BUG-009)` · `access-control.test.js` lần 1: 3 FAIL / 1 PASS (`BUG-009-test-truoc.png`), sau sửa 4/4 PASS; `npm test` 83/83 PASS; trên backend thật: `nv.q10` → `403`, `ql.tb` (Quản lý Tân Bình) → `200` (`BUG-009-xac-nhan.png`) |
